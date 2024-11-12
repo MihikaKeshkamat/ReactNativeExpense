@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React,{useState} from 'react';
+import { View, Text, StyleSheet, TextInput} from 'react-native';
 import AccountSetBottom from '../components/AccountSetBottom';
 const AccountSetup = () => {
     
@@ -11,6 +11,7 @@ const AccountSetup = () => {
       <Text style={styles.accountDescriptionText}>
         Account can be your bank, credit card or your wallet.
       </Text>  
+      
     </View>
     <AccountSetBottom/>
     {/* </View> */}
@@ -42,6 +43,7 @@ const styles = StyleSheet.create({
     paddingTop:30,
     marginLeft: 15,
   },
+  
 });
 
 export default AccountSetup;

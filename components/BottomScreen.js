@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const BottomScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name,setName] = useState('');
   const [token,setToken] = useState('')
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef(null);
@@ -59,6 +60,7 @@ const BottomScreen = () => {
       setToken('abc123');
       await AsyncStorage.setItem('username', email);
       await AsyncStorage.setItem('token', 'abc123');
+      await AsyncStorage.setItem('name',name);
     } catch (err) {
       console.error('Error saving data:', err);
     }

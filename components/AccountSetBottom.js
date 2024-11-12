@@ -4,8 +4,9 @@ import {BottomSheetModalProvider,BottomSheetView,BottomSheetModal, BottomSheetBa
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Dropdown } from 'react-native-element-dropdown';
 import { AntDesign } from '@expo/vector-icons';
-// import Home from '../components/Home';
+
 import {useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const Account = [
@@ -37,6 +38,8 @@ const Bank = [
     {label: 'Other', value:'17'},
 ]
 const AccountSetBottom = () => {
+  const [balance,setBalance] = useState('');
+ const [balanceError, setBalanceError] = useState('');
   const [name, setName] = useState('');
   const [selected,setSelected] = useState([]);
   const [value,setValue] = useState(null);
@@ -44,7 +47,7 @@ const AccountSetBottom = () => {
   const navigation = useNavigation();
   const [nameError,setNameError] = useState(null);
     const bottomSheetModalRef = useRef(null);
-  const snapPoints = useMemo(()=>['90%' ],[])
+  const snapPoints = useMemo(()=>['95%' ],[])
   // callbacks
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
@@ -55,27 +58,58 @@ const AccountSetBottom = () => {
   const renderBackdrop = useCallback(
     (props) => (<BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} pressBehaviour={null}/>
   ),[]);
-   
+  
+  const saveName = async() => {
+    try {
+      await AsyncStorage.setItem('name', name);
+      console.log("Name saved successfully");
+      console.log(name);
+    }catch(e) {console.log('Error saving name: ',e)}
+  };
   const handleLogin = () =>{
     bottomSheetModalRef.current?.close();
-    navigation.navigate('HomeScreen');
+    navigation.navigate('Home');
   };
   const nameRequired = () => { 
     if (name && String(name).length > 0) {
       setNameError(null); 
+      saveName();
     } else {
       setNameError("Name is required"); 
     }
   };
+  
 
   const handleContinue = () => {
     if (name && String(name).length > 0) {
       setNameError(null); 
-      handleLogin(); 
+      setBalanceError(null);
+      handleLogin();
+      saveName(); 
+      saveBalance();
     } else {
       nameRequired(); 
+      balanceRequired();
     }
   };
+  
+  const saveBalance = async() => {
+    try {
+      await AsyncStorage.setItem('balance', balance);
+      console.log("Balance saved successfully");
+      console.log(balance);
+    }catch(e) {console.log('Error saving balance: ',e)}
+  };
+  const balanceRequired = () => {
+    if (balance && balance > 0) {
+      setBalanceError(null);
+      handleLogin();
+      // saveBalance();
+    } else {
+      setBalanceError("Balance is required");
+    }
+  };
+  
   return (
     <GestureHandlerRootView style={styles.container}>
         <TouchableOpacity onPress={handlePresentModalPress} >
@@ -96,10 +130,16 @@ const AccountSetBottom = () => {
               <View style={styles.bankDetails}>
                 <TextInput placeholder='Name' value={name} style={{backgroundColor:'#d1d1d1', flex:1,paddingVertical:5, width:'200',borderRadius:5,paddingLeft:10}}  onChangeText={(text)=> setName(text)}/>
                 {nameError ? <Text style={{ color: 'red' }}>{nameError}</Text> : null}
-                {/* {!!setNameError && (
-                    <Text style={{color:"red"}}>{setNameError}</Text>
-                )} */}
-              </View>
+
+                {/* <Text style= {[styles.accountDescriptionText, fontWeight='800', fontSize=20]}>Balance</Text> */}
+              </View> 
+              <View style={styles.bankDetails}>
+              {/* <TextInput placeholder='Balance' value={balance}  onChangeText={(numeric) => setBalance(numeric)} maxLength={10} style={{backgroundColor:'#d1d1d1', flex:1,paddingVertical:5, width:'200',borderRadius:5,paddingLeft:10}}/> */}
+              <TextInput placeholder='Balance: $' value={balance} style={{backgroundColor:'#d1d1d1', flex:1,paddingVertical:5, width:'200',borderRadius:5,paddingLeft:10}}  onChangeText={(numeric)=> setBalance(numeric)}/>
+
+                {balanceError ? <Text style={{ color: 'red' }}>{balanceError}</Text> : null}
+              </View> 
+
               <View style={styles.containerDropdown}>
               <Dropdown
               style={[styles.dropdown, isFocus && {borderColor:'blue'}]}
@@ -189,13 +229,10 @@ const AccountSetBottom = () => {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
     height:520,
-    // backgroundColor: '#7F3DFF',
-
   },
   contentContainer: {
     height:120,
@@ -206,10 +243,8 @@ const styles = StyleSheet.create({
   bankDetails:{
     flexDirection: 'row',
     alignItems: 'center',
-    // borderBottomColor: '#ccc',
-    // borderBottomWidth: 1,
     paddingBottom: 8,
-    marginBottom: 20, // Add space between input fields
+    marginBottom: 10, 
     width: '50',
     marginLeft:20,
     marginRight:20,

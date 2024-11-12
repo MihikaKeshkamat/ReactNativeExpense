@@ -5,8 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SplashScreen from '../components/SplashScreen';
 import AccountSetup from '../components/AccountSetup';
-import HomeScreen from '../components/HomeScreen';
 
+import Tabs from '../components/Tabs';
 const Stack = createStackNavigator();
 
 const Layout = () => {
@@ -34,7 +34,7 @@ const Layout = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={isLoggedIn ? 'HomeScreen' : 'SplashScreen'}>
+      <Stack.Navigator initialRouteName={isLoggedIn ? 'Tabs' : 'SplashScreen'}>
         {!isLoggedIn ? (
           <>
             <Stack.Screen
@@ -44,16 +44,17 @@ const Layout = () => {
             />
             <Stack.Screen
               name="AccountSetup"
-              component={AccountSetup}
-              
+              component={AccountSetup} 
             />
           </>
         ) : (
           <>
+          
           <Stack.Screen
-           name="HomeScreen" 
-           component={HomeScreen} /> 
-          </>
+          name="Tabs" 
+          component={Tabs}  
+          options = {{headerShown: false}}/> 
+         </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
