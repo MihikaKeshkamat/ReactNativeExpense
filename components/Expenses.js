@@ -1,8 +1,10 @@
-import { View, Text,StyleSheet } from 'react-native'
+import { View, Text,StyleSheet,TouchableOpacity } from 'react-native'
 import React, {useState} from 'react'
 import {Dropdown } from 'react-native-element-dropdown';
 import {Ionicons } from '@expo/vector-icons';
-import AddExpenses from '../components/AddExpenses';
+// import AddExpenses from '../components/AddExpenses';
+// import {useNavigation} from '@react-navigation/native';
+
 const Months = [
   {label: "January", value: "1"},
   {label: "February", value: "2"},
@@ -21,7 +23,11 @@ const Months = [
 const Expenses = () => {
   const[isFocus,setIsFocus] = useState(false);
   const [selected,setSelected] = useState([]);
-
+  //Add Expense Button redirect 
+  // const navigation = useNavigation();
+  // const handleAddExpense = () => {
+  //   navigation.navigate('AddExpenses');
+  // }
   return (
 <>    
     <View style={styles.containerDropdown}>
@@ -66,8 +72,15 @@ const Expenses = () => {
            <Text>Filter</Text>
         </View>
       </View>
-      
-      <AddExpenses/>
+       
+       {/* <TouchableOpacity onPress={handleAddExpense} >
+      <View style={styles.largeButton}>
+        <Text style={styles.buttonText}>Add Expense</Text>
+      </View>
+    </TouchableOpacity> */}
+       
+
+      {/* <AddExpenses/> */}
     
 </>
 
@@ -125,7 +138,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap:200,
     paddingHorizontal:10,
-  }
+  },
+  largeButton: {
+    alignSelf: 'stretch',
+    borderRadius: 16,
+    backgroundColor: '#7F3DFF',
+    paddingHorizontal: 3,
+    paddingVertical: 5,
+    width:220,
+    // marginTop:400,
+    marginBottom:100,
+  },
+  buttonText: {
+    fontSize: 25,
+    color: 'white',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 
   
 })
