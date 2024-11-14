@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator} from '@react-navigation/stack';
-import HomePage from '../components/HomePage';
+import Home from '../components/Home';
 import Transaction from '../components/Transaction';
 import Analysis from '../components/Analysis';
 import Budget from '../components/Budget';
@@ -12,25 +12,25 @@ import { StyleSheet} from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
-// const ExpenseStack = createStackNavigator(); //to handle nested screens
+const ExpenseStack = createStackNavigator(); //to handle nested screens
 
-// const ExpenseStackNavigator = () => {
-//     return (
-//         <ExpenseStack.Navigator>
+const ExpenseStackNavigator = () => {
+    return (
+        <ExpenseStack.Navigator>
             
-//             <ExpenseStack.Screen
-//                name="AddExp"
-//                component={AddExp}
-//             //    options = {{headerShown:false}}
-//             />
-//             <ExpenseStack.Screen
-//                name= "Expenses"
-//                component={Expenses}
-//             //    options={{headerShown:false}}
-//             />
-//         </ExpenseStack.Navigator>
-//     )
-// }
+            <ExpenseStack.Screen
+               name="AddExp"
+               component={AddExp}
+            //    options = {{headerShown:false}}
+            />
+            <ExpenseStack.Screen
+               name= "Expenses"
+               component={Expenses}
+            //    options={{headerShown:false}}
+            />
+        </ExpenseStack.Navigator>
+    )
+}
 const Tabs = () => {
     const screenOptions = {
         tabBarStyle:{
@@ -58,7 +58,7 @@ const Tabs = () => {
     
     return (
        <Tab.Navigator {...{screenOptions}}>
-        <Tab.Screen name="HomePage"  component={HomePage}  
+        <Tab.Screen name="Home"  component={Home}  
         options={{
             // headerShown: false,
             tabBarIcon: ({focused}) => {
@@ -73,7 +73,7 @@ const Tabs = () => {
             }
         }}
         ></Tab.Screen>
-        <Tab.Screen name="Expenses" component={Expenses}
+        <Tab.Screen name="Expense" component={Expenses}
         options={{
             tabBarIcon: ({focused}) => {
                 return(
@@ -85,8 +85,9 @@ const Tabs = () => {
             }
         }}
         ></Tab.Screen>
-        <Tab.Screen name="AddExp" component={AddExp}
+        <Tab.Screen name="Add" component={ExpenseStackNavigator}
         options={{
+            headerShown: false,
             tabBarIcon: ({focused}) => {
                 return(
                     <Ionicons 
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
         },
         shadowOpacity:0.25,
         shadowRadius: 3.5,
-        elevation:5,
+        // elevation:5,
     }
 })
 export default Tabs;

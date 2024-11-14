@@ -107,7 +107,7 @@ const AddExpenses = () => {
 const styles = StyleSheet.create({
   amount: {
       width:'90%',
-      height:'200',
+      height:'90',
       borderRaidus:10,
       backgroundColor: '#ABB8A3',
       flexDirection: 'column',

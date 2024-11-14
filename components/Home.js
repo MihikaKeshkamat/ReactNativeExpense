@@ -3,7 +3,7 @@ import React,  {useEffect, useState} from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const HomePage = () => {
+const Home = () => {
   const [name,setName] = useState('');
   const [balance,setBalance] = useState('');
   const getDate = () => {
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomePage
+export default Home
 
 // const styles= StyleSheet.create({
   

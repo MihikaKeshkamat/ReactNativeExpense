@@ -253,13 +253,15 @@ const styles = StyleSheet.create({
     fontSize:40,
   },
   largeButton: {
-    alignSelf: 'stretch',
+    alignSelf: 'flex-end',
     borderRadius: 16,
     backgroundColor: '#7F3DFF',
     paddingHorizontal: 8,
     paddingVertical: 17,
     width:280,
+    // paddingVertical:400,
     marginTop:400,
+    marginBottom:0
   },
   buttonText: {
     fontSize: 25,

@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SplashScreen from '../components/SplashScreen';
 import AccountSetup from '../components/AccountSetup';
-
+import {ExpenseProvider} from '../components/ExpenseData';
 import Tabs from '../components/Tabs';
 const Stack = createStackNavigator();
 
@@ -33,6 +33,7 @@ const Layout = () => {
   }
 
   return (
+    <ExpenseProvider>
     <NavigationContainer>
       <Stack.Navigator initialRouteName={isLoggedIn ? 'Tabs' : 'SplashScreen'}>
         {!isLoggedIn ? (
@@ -58,6 +59,7 @@ const Layout = () => {
         )}
       </Stack.Navigator>
     </NavigationContainer>
+    </ExpenseProvider>
   );
 };
 
