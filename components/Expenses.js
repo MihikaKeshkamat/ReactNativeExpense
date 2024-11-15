@@ -1,11 +1,11 @@
-import { View, Text,StyleSheet,FlatList, ScrollView} from 'react-native'
+import { View, Text,StyleSheet,FlatList, ScrollView, TouchableOpacity} from 'react-native'
 import React, {useState,useRef} from 'react'
 import {Dropdown } from 'react-native-element-dropdown';
 import {Ionicons } from '@expo/vector-icons';
 import {useExpenses} from '../components/ExpenseData';
-// import AddExpenses from '../components/AddExpenses';
-// import {useNavigation} from '@react-navigation/native';
-
+import {useNavigation} from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
+import AddExp from '../components/AddExp';
 const Months = [
   {label: "January", value: "1"},
   {label: "February", value: "2"},
@@ -21,16 +21,41 @@ const Months = [
   {label: "December", value: "12"},
 ];
 
-const Expenses = () => {
-  const[isFocus,setIsFocus] = useState(false);
-  const [selected,setSelected] = useState([]);
-  const {expenses} = useExpenses();
-  // const scrollY = useRef(new Animated.Value(0)).current;
 
+
+const Expenses = ({navigation}) => {
+  const[isFocus,setIsFocus] = useState(false);
+  const [selected,setSelected] = useState(null);
+  const {expenses,  deleteExpense} = useExpenses();
+  const [editingExpense, setEditingExpense] = useState(null);
+  const [selectedCategory,setSelectedCategory] = useState(null);
+
+  const  categories = [
+    {label:"Food", value:"Food"},
+    {label:"Transport", value:"Transport"},
+    {label:"Rent", value:"Rent"},
+    {label:"Utilities", value:"Mortgage"},
+    {label:"Entertainment", value:"Entertainment"},
+    {label:"Health", value:"Health"},
+    {label:"Others", value:"Others"},
+  ];
+  
+  const handleDelete = (expense) => {
+    deleteExpense(expense.id);
+  };
+ 
+  const handleEdit = (expense) => {
+    navigation.navigate('AddExp', {expense});
+  }
+  
+  const filteredExpenses = selectedCategory
+            ? expenses.filter((expense) => expense.category === selectedCategory)
+            : expenses;
+
+             
   return (
   <ScrollView>
     <View style={styles.containerDropdown}>
-    {/* <ScrollView horizontal={true} style={styles.scrollView}> */}
     <Dropdown
               style={[styles.dropdown, isFocus && {borderColor:'blue'}]}
               placeholderStyle={styles.placeholderStyle}
@@ -68,31 +93,92 @@ const Expenses = () => {
       </View>
       <View style={styles.showExpenses}>
         <View style={styles.expenseHeader}>
-           <Text style={{fontSize:25, fontWeight:'800'}}> Expenses </Text> 
-           <Text>Filter</Text>
+           <Text style={{fontSize:25, fontWeight:'800', marginTop:12}}> Expenses </Text> 
+    <View style={styles.filterContainerDropdown}>
+
+           <Dropdown
+              style={[styles.filterDropdown, isFocus && {borderColor:'blue'}]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              search
+              data={categories}
+              maxHeight={200}
+              labelField="label"
+              valueField="value"
+              placeholder={!isFocus? 'Categories' : '...'}
+              searchPlaceholder="Search..."
+              value={selectedCategory}
+              onFocus={() => setIsFocus(true)}
+              onBlur={()=> setIsFocus(false)}
+              onChange={item => {
+                setSelectedCategory(item.value);
+                setIsFocus(false);
+              }}
+              renderRightIcon={()=>(
+                <Ionicons
+                   style={styles.icon}
+                   color="black"
+                   name="chevron-down-circle-outline"
+                   size={20}
+                />
+              )}
+              selectedStyle={styles.selectedStyle}
+              >
+              </Dropdown>
+              </View>
         </View>
       </View>
        
       <View style={styles.expenseDataContainer}>
-        <FlatList
-            data={expenses}
-            keyExtractor = {item => item.id}
-            renderItem={({item}) => (
-              <View style={styles.expenseItem}>
-                <View style={styles.expenseDetails}>
-                <Text style={styles.itemText}>{item.itemName}</Text>
-                <Text style={styles.dateText}>{item.dateTime}</Text>
+           <FlatList
+           data={expenses}
+           keyExtractor = {(item) => item.id}
+           inverted={true}
+           renderItem={({item}) => (
+             <View style={styles.expenseItem}>
+               <View style={styles.expenseDetails}>
+               <Text style={styles.itemCategory}>{item.category}</Text>
+               {/* item.category */}
+               <Text style={styles.itemText}>{item.itemName}</Text>
+               </View>
+             
+               <View style={{display:'flex', flexDirection:'row'}}>
+               <Text style={styles.amountText}>${item.amount}</Text> 
+               <TouchableOpacity onPress={() => handleEdit(item)}>
+                 <Ionicons
+                 name="pencil"
+                 color="black"
+                 size={20}
+                 style={{marginTop:'30',marginLeft:30,paddingTop:5}}
+                 />
+
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item)}> 
+
+               <Ionicons
+               name="trash-bin"
+               color="red"
+               size={20}
+               style={{marginLeft:10,marginTop:5}}
+                />
+
+</TouchableOpacity> 
+                </View>
+                
+                <View> 
+                
+                <Text style={styles.dateText}>{new Date(item.date).toLocaleDateString()}</Text>
                 </View>
               
-                <View style={{display:'flex', flexDirection:'column', justifyContent:'flex-end'}}>
-                <Text style={styles.amountText}>${item.amount}</Text>
-                 </View> 
-                </View>
+                 
+             </View>
 
-            )}
-        >
-        </FlatList>
-    
+           )}
+       >
+       </FlatList>
+        
       </View>  
       <View style={{height:100}}></View> 
       </ScrollView>
@@ -105,6 +191,19 @@ const styles = StyleSheet.create({
     padding:10,
     width:390,
   },
+  filterContainerDropdown: {
+    marginTop:0,
+    padding:10,
+    width:170,
+    marginLeft:-50,
+  },
+  filterDropdown:{
+    height: 40,
+    backgroundColor: '#d1d1d1',
+    borderBottomColor: 'gray',
+    borderBottomWidth: 1,
+    borderRadius:5,
+  },
   dropdown: {
     height: 40,
     backgroundColor: '#d1d1d1',
@@ -114,7 +213,7 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     fontSize: 14,
-    marginLeft:5, 
+    marginLeft:10, 
   },
   selectedTextStyle: {
     fontSize: 14,
@@ -146,7 +245,7 @@ const styles = StyleSheet.create({
   },
   expenseHeader: {
     flexDirection: 'row',
-    gap:200,
+    gap:126,
     paddingHorizontal:10,
   },
   largeButton: {
@@ -191,7 +290,7 @@ const styles = StyleSheet.create({
     marginLeft:20,
     marginTop:5,
   },
-  itemText: {
+  itemCategory: {
     color:'#292B2D',
     fontSize: 18,
     fontWeight:'500',
@@ -200,7 +299,9 @@ const styles = StyleSheet.create({
     color:'#91919F',
     fontSize:13,
     fontWeight:'500',
-    marginTop:13,
+    marginTop:40,
+    marginLeft:-100,
+    // marginRight:10,
   },
   amountText:{
     color: '#FD3C4A',
@@ -208,9 +309,11 @@ const styles = StyleSheet.create({
     fontWeight:'600',
     alignSelf:'flex-start',
     marginRight:0,
-    // gap:200,
-    marginLeft:110,
-    marginTop:20,
+    marginLeft:115,
+    marginTop:7,
+  },
+  categoryText:{
+    color:'black'
   }
   
 })

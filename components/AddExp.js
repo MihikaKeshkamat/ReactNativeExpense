@@ -1,45 +1,68 @@
 import { View, Text, StyleSheet,TextInput,Image,useWindowDimensions,TouchableOpacity,ScrollView,FlatList } from 'react-native'
-import React,{useState} from 'react'
+import React,{useState, useEffect} from 'react'
 import {useNavigation} from '@react-navigation/native';
 import {useExpenses} from '../components/ExpenseData';
 import {Ionicons} from '@expo/vector-icons';
+import {Dropdown } from 'react-native-element-dropdown';
+import { AntDesign } from '@expo/vector-icons';
 
-const Categories = [
-    {label:"Food", value:"1"},
-    {label:"Transportation", value:"2"},
-    {label:"Rent/Mortgage", value:"3"},
-    {label:"Utilities", value:"4"},
-    {label:"Entertainment", value:"5"},
-    {label:"Travel", value:"6"},
-    {label:"Other", value:"7"},
-  ];
 
-const AddExp = () => {
+
+const AddExp = ({route, navigation}) => {
     const [amount,setAmount] = useState('');
   const [itemName,setItemName] = useState('');
-  const {addExpenses, expenses, updateExpense} = useExpenses();
+  const {addExpenses, updateExpense} = useExpenses();
   const [editingId,setEditingId] = useState(null);
+  const [editingExpense, setEditingExpense] = useState(null);
+  const[isFocus,setIsFocus] = useState(false);
+  const [selected,setSelected] = useState([]);
 
-  const navigation = useNavigation();
+  const [selectedCategory,setSelectedCategory] = useState(null);
 
+  const  categories = [
+    {label:"Food", value:"Food"},
+    {label:"Transport", value:"Transport"},
+    {label:"Rent", value:"Rent"},
+    {label:"Utilities", value:"Utilities"},
+    {label:"Entertainment", value:"Entertainment"},
+    {label:"Health", value:"Health"},
+    {label:"Others", value:"Others"},
+  ];
+  const {expense} = route.params || {}; 
+
+  useEffect(() => {
+    if(expense) {
+      setEditingExpense([expense]);
+      setEditingId(expense.id)
+      setAmount(expense.amount);
+      setItemName(expense.itemName);
+    } 
+  }, [expense]);
+
+  
   const handleSave = () => {
-    if(amount && itemName) {
-      if(editingId) {
-        updateExpense(editingId, amount, itemName);
-      }else {
-      addExpenses(amount,itemName);
+    // event.persist();
+    if(amount && selected && itemName) {
+      if(expense) {
+        updateExpense(expense.id,amount,itemName,selectedCategory);
+      }
+      else {
+      addExpenses({
+        amount: amount,
+        category: selectedCategory,
+        itemName: itemName,
+      date: new Date().toISOString(),
+      });
       }
       setAmount('');
       setItemName('');
       setEditingId(null);
-      navigation.navigate('Expenses');
+      navigation.goBack();
+      
     }
   };
-  const startEditing = (expenses) => {
-    setEditingId(expenses.id);
-    setAmount(expenses.amount);
-    setItemName(expenses.itemName);
-  };
+
+  
   const getCurrentDateTime = () => {
     const now = new Date();
     
@@ -60,17 +83,14 @@ const AddExp = () => {
   
   const dimensions = useWindowDimensions().width;
 
+ 
+
   return (
     <> 
     
     <ScrollView>
 
-       {/* <View style={styles.addExpImage}>
-       <Image source={require('../assets/images/AddExpense.png')} style={[styles.image,{width:dimensions*0.8, height:200, resizeMode: 'cover'}]}/>
-       </View> */}
-    {/* <View>
-        <Text>Add Expense</Text>
-    </View> */}
+      
     <View style={styles.amount}>
        <Text style={{fontSize:24, fontWeight:'400'}} >Amount Spent</Text>
        <TextInput  placeholder='$               ' value={amount}   onChangeText={(numeric)=> setAmount(numeric)} style={styles.amountPlaceholder}/>
@@ -83,45 +103,89 @@ const AddExp = () => {
             <TextInput style={{fontSize:18, color:'#DAE7DC'}} placeholder='Enter the name or place' value={itemName} onChangeText={(text)=> setItemName(text)}/>
         </View>
     </View> 
-    <View style={styles.buttons}>
+    
 
-             <TouchableOpacity onPress={handleSave} >
-      <View style={styles.largeButton}>
-        <Text style={styles.buttonText}>{editingId ? 'Update' : 'Save'}</Text>
-      </View>
-    </TouchableOpacity>
+      <View style={styles.category}>
+         
+        <Dropdown
+              style={[styles.dropdown, isFocus && {borderColor:'blue'}]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              search
+              data={categories}
+              maxHeight={200}
+              labelField="label"
+              valueField="value"
+              placeholder={!isFocus? 'Category' : '...'}
+              searchPlaceholder="Search..."
+              value={selectedCategory}
+              onFocus={() => setIsFocus(true)}
+              onBlur={()=> setIsFocus(false)}
+              onChange={item => {
+                setSelectedCategory(item.value);
+                setIsFocus(false);
+              }}
+              
+              renderLeftIcon={() => (
+                <Ionicons
+          name="grid"
+          color="black" 
+          size={20}
+        />
+              )}
+              renderRightIcon={()=>(
+                <AntDesign
+                   style={styles.icon}
+                   color="black"
+                   name="Safety"
+                   size={20}
+                />
+              )}
 
-    <TouchableOpacity >
-      <View style={styles.largeButton}>
-        <Text style={styles.buttonText}>Cancel</Text>
-      </View>
-    </TouchableOpacity>
+              selectedStyle={styles.selectedStyle}
+              >
+              </Dropdown>
+              
              </View>
+
+             <View style={styles.buttons}>
+
+<TouchableOpacity onPress={handleSave} >
+<View style={styles.largeButton}>
+<Text style={styles.buttonText}>{editingExpense ? 'Update' : 'Save'}</Text>
+</View>
+</TouchableOpacity>
+
+<TouchableOpacity>
+<View style={styles.largeButton}>
+<Text style={styles.buttonText}>Cancel</Text>
+</View>
+</TouchableOpacity>
+</View>
+    
              <View style={styles.expenseDataContainer}>
         <FlatList
-            data={expenses}
-            keyExtractor = {item => item.id}
+            data={editingExpense}
+           keyExtractor = {(item) => item.id}
+            
             renderItem={({item}) => (
               <View style={styles.expenseItem}>
                 <View style={styles.expenseDetails}>
                 <Text style={styles.itemText}>{item.itemName}</Text>
+                <Text style={styles.itemCategory}>{item.category}</Text>
+
                 <Text style={styles.dateText}>{item.dateTime}</Text>
                 </View>
               
-                {/* <View style={{display:'flex', flexDirection:'row', justifyContent:'flex-end'}}> */}
+                
                 <Text style={styles.amountText}>${item.amount}</Text>
-                <TouchableOpacity onPress={() => startEditing(item)}>
-                  <Ionicons
-                  name="pencil"
-                  color="black"
-                  size={20}
-                  style={{marginTop:'30',marginLeft:15,paddingTop:18}}
-                  />
-
-                 </TouchableOpacity>
+                
+                     
                  </View> 
                  
-                // </View>
+               
 
             )}
         >
@@ -129,7 +193,7 @@ const AddExp = () => {
     
       </View> 
       
-      <View style={{height:100}}></View> 
+      {/* <View style={{height:100}}></View>  */}
     </ScrollView>
     
     </>
@@ -195,7 +259,7 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
     gap:60,
-    marginTop:10,
+    marginTop:20,
     // position:'relative',
     paddingVertical:10,
     paddingHorizontal:80,
@@ -262,10 +326,51 @@ const styles = StyleSheet.create({
     fontWeight:'600',
     alignSelf:'flex-start',
     marginRight:0,
-    // gap:200,
     marginLeft:80,
     marginTop:20,
-  }
+  },
+  category: {
+      marginHorizontal:30,
+      marginTop:20,
+  },
+  dropdown: {
+    height: 50,
+    backgroundColor:'#B2C9AB',
+    borderBottomColor: 'gray',
+    borderBottomWidth: 1,
+    borderRadius:10,
+    paddingHorizontal:10,
+    
+  },
+  placeholderStyle: {
+    fontSize: 18,
+    marginLeft:10, 
+  },
+  selectedTextStyle: {
+    fontSize: 14,
+    backfaceVisibility: 'visible',
+    
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+    marginHorizontal:20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+    fontWeight:'500',
+
+  },
+  icon: {
+    marginRight: 5,
+    marginHorizontal:20,
+
+  },
+  selectedStyle: {
+    borderRadius: 12,
+    fontWeight:'500',
+  },
   
 })
 

@@ -9,21 +9,18 @@ export const useExpenses = () => useContext(ExpenseContext);
 export const ExpenseProvider = ({children}) => {
     const [expenses,setExpenses] = useState([]);
 
-    useEffect(() => {
-        loadExpenses();
-    },[]);
-
     const loadExpenses = async () => {
         try{
             const storedExpenses = await AsyncStorage.getItem('expenses');
-            if(storedExpenses) {
-                setExpenses(JSON.parse(storedExpenses));
-            }
+            const expensesData = storedExpenses ? JSON.parse(storedExpenses) : [];
+            setExpenses(expensesData);
         }catch(error){
             console.error("Failed to load expenses",error);
         }
     };
-
+    useEffect(() => {
+        loadExpenses();
+    },[]);
     const saveExpenses = async (newExpenses) => {
         try{
             await AsyncStorage.setItem('expenses', JSON.stringify(newExpenses));
@@ -32,24 +29,34 @@ export const ExpenseProvider = ({children}) => {
         }
     };
 
-    const addExpenses = (amount, itemName) => {
-        const dateTime = new Date().toLocaleString();
-        const newExpense = {id: Date.now().toString(), amount, itemName, dateTime};
-        const updatedExpenses = [...expenses,newExpense];
-        setExpenses(updatedExpenses);
-        saveExpenses(updatedExpenses);
+    const addExpenses = (newExpense) => {
+        setExpenses([...expenses, {
+            id:Date.now().toString(),
+            ...newExpense
+        }]);
     };
     
-    const updateExpense = (id,amount,itemName) => {
-        const updatedExpenses = expenses.map((expenses) => 
-        expenses.id === id ? {...expenses, amount, itemName} : expenses
-    );
-    setExpenses(updatedExpenses);
-    saveExpenses(updatedExpenses);
-    };
+    
+    
+    
+
+    const updateExpense = (id, updatedAmount, updatedItemName, selectedCategory) => {
+        const updatedExpenses = expenses.map((expense) => 
+        expense.id === id ? {...expense, amount:updatedAmount, itemName: updatedItemName, category: selectedCategory} : expense);
+        setExpenses(updatedExpenses);
+        saveExpenses(updatedExpenses);
+    }
+    
+    
+
+    const deleteExpense = (id) => {
+        const updatedExpenses = expenses.filter((expense) => expense.id !== id);
+        setExpenses(updatedExpenses);
+        saveExpenses(updatedExpenses);
+    }
 
     return(
-        <ExpenseContext.Provider value={{expenses,addExpenses, updateExpense}}>
+        <ExpenseContext.Provider value={{expenses,addExpenses, updateExpense, deleteExpense}}>
             {children}
         </ExpenseContext.Provider>
     );

@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import AddExp from '../components/AddExp';
+import Expenses from '../components/Expenses';
 import SplashScreen from '../components/SplashScreen';
 import AccountSetup from '../components/AccountSetup';
+import Home from '../components/Home'
 import {ExpenseProvider} from '../components/ExpenseData';
 import Tabs from '../components/Tabs';
 const Stack = createStackNavigator();
@@ -55,6 +57,21 @@ const Layout = () => {
           name="Tabs" 
           component={Tabs}  
           options = {{headerShown: false}}/> 
+          <Stack.Screen
+          name="Home" 
+          component={Home}  
+          // options = {{headerShown: false}}
+          /> 
+           <Stack.Screen
+          name="AddExp" 
+          component={AddExp}  
+          // options = {{headerShown: false}}
+          /> 
+          <Stack.Screen
+          name="Expenses" 
+          component={Expenses}  
+          // options = {{headerShown: false}}
+          /> 
          </>
         )}
       </Stack.Navigator>

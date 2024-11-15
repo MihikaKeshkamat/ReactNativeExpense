@@ -2,10 +2,11 @@ import { View, Text, StyleSheet } from 'react-native'
 import React,  {useEffect, useState} from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-
+import {useExpenses} from '../components/ExpenseData'
 const Home = () => {
   const [name,setName] = useState('');
   const [balance,setBalance] = useState('');
+  const {expenses} = useExpenses();
   const getDate = () => {
     const today = new Date();
     const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(today);
@@ -29,6 +30,9 @@ const Home = () => {
     };
     getName();
   },[]);
+
+  const totalAmount = expenses.reduce((sum,expense) => sum + parseFloat(expense.amount),0);
+
   return (
     <>
      <View style={styles.header}>
@@ -77,7 +81,7 @@ const Home = () => {
              <Text style={styles.incomeLabel}>Expense </Text>
           </View>
           <View>
-            <Text style={styles.incomeAmount}>$ 00.0 </Text>
+            <Text style={styles.incomeAmount}>${totalAmount.toFixed(2)}</Text>
           </View>
         </View>
     </View>
@@ -190,42 +194,3 @@ const styles = StyleSheet.create({
 
 export default Home
 
-// const styles= StyleSheet.create({
-  
-//   // profile:{
-//   //   left:10,
-//   //   top:50,
-//   // },
-//   // name: {
-//   //   left: 70,
-//   //   top:14,
-//   //   fontWeight: '500',
-//   //   fontSize:18,
-//   // },
-//   // dateContainer:{
-//   //   borderColor:'black',
-//   //   border: '10 solid black',
-//   // },
-//   // date: {
-//   //   left:290,
-//   //   fontSize: 18,
-//   //   top:-10,
-//   //   fontWeight:'500',
-//   // }
-// })
-
-{/* <View style={styles.header}>
-      <Ionicons style={styles.profile}
-      name="person-circle"
-      size={48}
-      color="#793FCA"
-      />
-      <View>
-      <Text style={styles.name}>Hi, {name}</Text>
-      
-      </View>
-      <View style={styles.dateContainer}>
-        <Text style={styles.date}>{getDate()}
-        </Text>
-      </View>
-    </View> */}
