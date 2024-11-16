@@ -1,11 +1,9 @@
-import { View, Text,StyleSheet,FlatList, ScrollView, TouchableOpacity} from 'react-native'
-import React, {useState,useRef} from 'react'
+import { View, Text,StyleSheet,FlatList, ScrollView, TouchableOpacity, Alert} from 'react-native'
+import React, {useState} from 'react'
 import {Dropdown } from 'react-native-element-dropdown';
 import {Ionicons } from '@expo/vector-icons';
 import {useExpenses} from '../components/ExpenseData';
-import {useNavigation} from '@react-navigation/native';
-import { useFocusEffect, useRoute } from '@react-navigation/native';
-import AddExp from '../components/AddExp';
+
 const Months = [
   {label: "January", value: "1"},
   {label: "February", value: "2"},
@@ -39,14 +37,38 @@ const Expenses = ({navigation}) => {
     {label:"Health", value:"Health"},
     {label:"Others", value:"Others"},
   ];
-  
+  const deleteAlert = (item) => {
+    Alert.alert('Warning', 'Are you sure you want to delete this Expense?', [
+      {
+        text: 'OK',
+        onPress : () => handleDelete(item),
+      },
+      {
+        text:'Cancel',
+        onPress : console.log('Cancel Pressed'),
+      }
+    ]);
+    
+  }
   const handleDelete = (expense) => {
     deleteExpense(expense.id);
+    Alert.alert('Info', 'Expense Deleted');
   };
  
   const handleEdit = (expense) => {
     navigation.navigate('AddExp', {expense});
   }
+  const getCurrentDateTime = () => {
+    const now = new Date();
+  
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = now.toLocaleString('default', { month: 'short' });
+    const year = now.getFullYear();
+  
+    const date = `${day}-${month}-${year}`;
+  
+    return date;
+  };
   
   const filteredExpenses = selectedCategory
             ? expenses.filter((expense) => expense.category === selectedCategory)
@@ -130,56 +152,48 @@ const Expenses = ({navigation}) => {
               </View>
         </View>
       </View>
-       
       <View style={styles.expenseDataContainer}>
-           <FlatList
-           data={expenses}
-           keyExtractor = {(item) => item.id}
-           inverted={true}
-           renderItem={({item}) => (
-             <View style={styles.expenseItem}>
-               <View style={styles.expenseDetails}>
-               <Text style={styles.itemCategory}>{item.category}</Text>
-               {/* item.category */}
-               <Text style={styles.itemText}>{item.itemName}</Text>
-               </View>
-             
-               <View style={{display:'flex', flexDirection:'row'}}>
-               <Text style={styles.amountText}>${item.amount}</Text> 
-               <TouchableOpacity onPress={() => handleEdit(item)}>
-                 <Ionicons
-                 name="pencil"
-                 color="black"
-                 size={20}
-                 style={{marginTop:'30',marginLeft:30,paddingTop:5}}
-                 />
+      <FlatList
+        data={expenses}
+        keyExtractor={(item) => item.id}
+        inverted={true}
+        renderItem={({ item }) => (
+          <View style={styles.expenseItem}>
+            <View style={styles.expenseDetails}>
+              <Text style={styles.categoryText}>{item.category}</Text>
+              <Text style={styles.itemText}>{item.itemName}</Text>
+            </View>
 
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item)}> 
-
-               <Ionicons
-               name="trash-bin"
-               color="red"
-               size={20}
-               style={{marginLeft:10,marginTop:5}}
+            <View style={styles.amountContainer}>
+              <Text style={styles.amountText}>${item.amount}</Text>
+            </View>
+            <View style={styles.iconDateContainer}>
+              <View style={styles.iconContainer}>
+              <TouchableOpacity onPress={() => handleEdit(item)}>
+                <Ionicons
+                  name="pencil"
+                  color="black"
+                  size={20}
                 />
-
-</TouchableOpacity> 
-                </View>
-                
-                <View> 
-                
-                <Text style={styles.dateText}>{new Date(item.date).toLocaleDateString()}</Text>
-                </View>
-              
-                 
-             </View>
-
-           )}
-       >
-       </FlatList>
-        
-      </View>  
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteAlert(item)}>
+                <Ionicons
+                  name="trash-bin"
+                  color="red"
+                  size={20}
+                />
+              </TouchableOpacity>
+              </View>
+              <View style={styles.dateContainer}>
+              <Text style={styles.dateText}>
+                {getCurrentDateTime()}
+              </Text>
+              </View>
+            </View>
+          </View>
+        )}
+      ></FlatList>
+    </View>
       <View style={{height:100}}></View> 
       </ScrollView>
   )
@@ -265,56 +279,58 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   expenseDataContainer:{
-    flex:1
+    flex:1,
   },
-  expenseItem: {
+  expenseItem:{
+    width:'90%',
+    height:80,
     display:'flex',
-    flexDirection:'row',
-    alignItems:'flex-start',
-    justifyContent:'flex-start',
+    flexDirection: 'row',
     borderWidth:1,
     borderRadius:20,
-    marginHorizontal:25,
-    marginBottom:10,
+    marginHorizontal:20,
+    justifyContent:'space-between',
+    marginVertical:10,
   },
-  expenseDetails:{
-    display:'flex',
-    marginTop:'auto',
-    marginBottom:'auto',
-    minHeight:60,
-    paddingTop:6,
-    paddingBottom:6,
-    flexDirection: 'column',
-    alignItems:'flex-start',
-    justifyContent:'flex-start',
-    marginLeft:20,
-    marginTop:5,
-  },
-  itemCategory: {
-    color:'#292B2D',
-    fontSize: 18,
-    fontWeight:'500',
-  },
-  dateText: {
-    color:'#91919F',
-    fontSize:13,
-    fontWeight:'500',
-    marginTop:40,
-    marginLeft:-100,
-    // marginRight:10,
-  },
-  amountText:{
-    color: '#FD3C4A',
-    fontSize:20,
-    fontWeight:'600',
-    alignSelf:'flex-start',
-    marginRight:0,
-    marginLeft:115,
-    marginTop:7,
+  expenseDetails :{
+    flexDirection:'column',
+    justifyContent:'space-between',
+    width:'36%'
   },
   categoryText:{
-    color:'black'
+    marginLeft:10,
+    marginTop:8,
+    fontSize:18,
+    fontWeight:'600'
+  },
+  itemText:{
+    marginBottom:10,
+    marginLeft:10,
+    fontSize:17,
+    fontWeight:'400',
+  },
+  amountContainer:{
+    justifyContent:'center',
+  },
+  amountText:{
+    fontSize:24,
+    fontWeight:'500',
+    color:'red',
+  },
+  iconDateContainer:{
+    flexDirection:'column',
+    justifyContent:'space-between',
+  },
+  iconContainer:{
+    flexDirection:'row',
+    justifyContent:'space-evenly',
+    marginTop:8,
+  },
+  dateContainer:{
+    marginRight:7,
+    marginBottom:8,
   }
+  
   
 })
 

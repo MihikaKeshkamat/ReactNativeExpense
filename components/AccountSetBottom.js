@@ -4,7 +4,7 @@ import {BottomSheetModalProvider,BottomSheetView,BottomSheetModal, BottomSheetBa
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Dropdown } from 'react-native-element-dropdown';
 import { AntDesign } from '@expo/vector-icons';
-
+import Home from '../components/HomeScreen';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -66,10 +66,21 @@ const AccountSetBottom = () => {
       console.log(name);
     }catch(e) {console.log('Error saving name: ',e)}
   };
-  const handleLogin = () =>{
-    bottomSheetModalRef.current?.close();
-    navigation.navigate('Home');
+  const handleLogin = () => {
+    if (bottomSheetModalRef?.current) {
+      bottomSheetModalRef.current.close();
+    }
+    navigation.navigate('Tabs');
   };
+
+  // const handleLogin = () => {
+  //   bottomSheetModalRef.current?.close();
+  //   navigation.reset({
+  //     index: 0,
+  //     routes: [{ name: 'Tabs' }],
+  //   });
+  // };
+  
   const nameRequired = () => { 
     if (name && String(name).length > 0) {
       setNameError(null); 
@@ -87,6 +98,8 @@ const AccountSetBottom = () => {
       handleLogin();
       saveName(); 
       saveBalance();
+      console.log(navigation.getState());
+
     } else {
       nameRequired(); 
       balanceRequired();

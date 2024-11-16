@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import React,  {useEffect, useState} from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {useExpenses} from '../components/ExpenseData'
+import {useExpenses} from './ExpenseData'
 const Home = () => {
   const [name,setName] = useState('');
   const [balance,setBalance] = useState('');

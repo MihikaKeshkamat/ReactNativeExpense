@@ -1,5 +1,6 @@
 import React, {createContext, useState,useContext, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 
 const ExpenseContext = createContext();
 
@@ -34,6 +35,7 @@ export const ExpenseProvider = ({children}) => {
             id:Date.now().toString(),
             ...newExpense
         }]);
+        Alert.alert('Info', 'Expense Added');
     };
     
     
@@ -45,6 +47,7 @@ export const ExpenseProvider = ({children}) => {
         expense.id === id ? {...expense, amount:updatedAmount, itemName: updatedItemName, category: selectedCategory} : expense);
         setExpenses(updatedExpenses);
         saveExpenses(updatedExpenses);
+        Alert.alert('Info','Expense Updated');
     }
     
     

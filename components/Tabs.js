@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator} from '@react-navigation/stack';
-import Home from '../components/Home';
+import HomeScreen from '../components/HomeScreen'
 import Transaction from '../components/Transaction';
 import Analysis from '../components/Analysis';
 import Budget from '../components/Budget';
@@ -42,7 +42,6 @@ const Tabs = () => {
             borderRaidus:100,
             bottom:20,
             elevation:0,
-            ...styles.shadow,
         },
         // tabBarItemStyle:{
         //     backgroundColor:'#ccc'
@@ -53,12 +52,12 @@ const Tabs = () => {
             top:5,
         },
         tabBarShowLabel: true,
-        // tabBarHideOnKeyboard:true,
+        tabBarHideOnKeyboard:true,
     };
     
     return (
-       <Tab.Navigator {...{screenOptions}}>
-        <Tab.Screen name="Home"  component={Home}  
+       <Tab.Navigator screenOptions = {screenOptions}>
+        <Tab.Screen name="Home"  component={HomeScreen}  
         options={{
             // headerShown: false,
             tabBarIcon: ({focused}) => {
@@ -128,18 +127,7 @@ const Tabs = () => {
     );
 }
 
-const styles = StyleSheet.create({
-    shadow: {
-        shadowColor: '#7F5DF0',
-        shadowOffset:{
-            width:0,
-            height:10,
-        },
-        shadowOpacity:0.25,
-        shadowRadius: 3.5,
-        // elevation:5,
-    }
-})
+
 export default Tabs;
 
 

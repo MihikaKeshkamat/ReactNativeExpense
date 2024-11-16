@@ -6,12 +6,27 @@ import AddExp from '../components/AddExp';
 import Expenses from '../components/Expenses';
 import SplashScreen from '../components/SplashScreen';
 import AccountSetup from '../components/AccountSetup';
-import Home from '../components/Home'
+import HomeScreen from '../components/HomeScreen'
 import {ExpenseProvider} from '../components/ExpenseData';
 import Tabs from '../components/Tabs';
 const Stack = createStackNavigator();
 
 const Layout = () => {
+
+  // const AuthNavigator = () => (
+  //   <Stack.Navigator initialRouteName="SplashScreen">
+  //     <Stack.Screen
+  //       name="SplashScreen"
+  //       component={SplashScreen}
+  //       options={{ headerShown: false }}
+  //     />
+  //     <Stack.Screen
+  //       name="AccountSetup"
+  //       component={AccountSetup}
+  //     />
+  //   </Stack.Navigator>
+  // );
+  
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -47,21 +62,26 @@ const Layout = () => {
             />
             <Stack.Screen
               name="AccountSetup"
-              component={AccountSetup} 
+              component={AccountSetup}
+
             />
+            <Stack.Screen
+          name="Tabs" 
+          component={Tabs}  
+          options = {{headerShown: false}}/> 
           </>
         ) : (
           <>
-          
+         
           <Stack.Screen
           name="Tabs" 
           component={Tabs}  
           options = {{headerShown: false}}/> 
           <Stack.Screen
           name="Home" 
-          component={Home}  
+          component={HomeScreen}  
           // options = {{headerShown: false}}
-          /> 
+          />  
            <Stack.Screen
           name="AddExp" 
           component={AddExp}  
