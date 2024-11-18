@@ -1,5 +1,5 @@
 import { View, Text,StyleSheet,FlatList, ScrollView, TouchableOpacity, Alert} from 'react-native'
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import {Dropdown } from 'react-native-element-dropdown';
 import {Ionicons } from '@expo/vector-icons';
 import {useExpenses} from '../components/ExpenseData';
@@ -21,12 +21,26 @@ const Months = [
 
 
 
-const Expenses = ({navigation}) => {
+const Expenses = ({navigation, route}) => {
   const[isFocus,setIsFocus] = useState(false);
   const [selected,setSelected] = useState(null);
   const {expenses,  deleteExpense} = useExpenses();
   const [editingExpense, setEditingExpense] = useState(null);
   const [selectedCategory,setSelectedCategory] = useState(null);
+  const filter = route.params?.filter || null;
+  const [filteredExpenses,setFilteredExpenses] = useState([]);
+ useEffect(() => {
+  filterExpenses();
+ },[expenses,filter]);
+
+ const filterExpenses = () => {
+  if(!filter) {
+    setFilteredExpenses(expenses);
+  }else {
+    const filtered = expenses.filter(expense => expense.type === filter);
+    setFilteredExpenses(filtered);
+  }
+ };
 
   const  categories = [
     {label:"Food", value:"Food"},
@@ -70,11 +84,7 @@ const Expenses = ({navigation}) => {
     return date;
   };
   
-  const filteredExpenses = selectedCategory
-            ? expenses.filter((expense) => expense.category === selectedCategory)
-            : expenses;
-
-             
+          
   return (
   <ScrollView>
     <View style={styles.containerDropdown}>
@@ -110,12 +120,12 @@ const Expenses = ({navigation}) => {
               >
               </Dropdown>
     </View>
-    <View style={{height:200,backgroundColor: '#ccc', marginHorizontal:20, marginTop:20}}>
+    {/* <View style={{height:200,backgroundColor: '#ccc', marginHorizontal:20, marginTop:20}}>
       <Text>A Pie chart demonstrating expenses via categories</Text>
-      </View>
+      </View> */}
       <View style={styles.showExpenses}>
         <View style={styles.expenseHeader}>
-           <Text style={{fontSize:25, fontWeight:'800', marginTop:12}}> Expenses </Text> 
+           <Text style={{fontSize:25, fontWeight:'800', marginTop:12}}> {filter ? `${filter} Transactions` : 'All Transactions'} </Text> 
     <View style={styles.filterContainerDropdown}>
 
            <Dropdown
@@ -154,7 +164,7 @@ const Expenses = ({navigation}) => {
       </View>
       <View style={styles.expenseDataContainer}>
       <FlatList
-        data={expenses}
+        data={filteredExpenses}
         keyExtractor={(item) => item.id}
         inverted={true}
         renderItem={({ item }) => (
@@ -185,15 +195,32 @@ const Expenses = ({navigation}) => {
               </TouchableOpacity>
               </View>
               <View style={styles.dateContainer}>
+                <Text style={[styles.debit,{color: item.type === 'Credit'? '#00A65A' : '#FD3C4A'}]}>{item.type}</Text>
               <Text style={styles.dateText}>
                 {getCurrentDateTime()}
               </Text>
               </View>
             </View>
+            {/* <Text>
+            ListEmptyComponent= {() => {
+               <View style = {styles.emptyContainer}> 
+                  <Ionicons name="receipt-outline" size={48} color="#666"/>
+                  <Text style={styles.emptyText}>No Transactions found</Text>
+                  {filter && (
+                    <Text styles={styles.subText}>No {filter.toLowerCase()} Transactions Available</Text>
+                  )}
+               </View>
+            }}
+            </Text> */}
           </View>
         )}
+
+        
       ></FlatList>
+      
+
     </View>
+
       <View style={{height:100}}></View> 
       </ScrollView>
   )
@@ -329,6 +356,10 @@ const styles = StyleSheet.create({
   dateContainer:{
     marginRight:7,
     marginBottom:8,
+  },
+  debit: {
+    marginRight:0,
+    marginLeft:30,
   }
   
   

@@ -20,7 +20,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.ExpenseManager"
+      "googleServicesFile" : "./google-services.json",
+      
+      "package":"com.anonymous.ExpenseManager"
     },
     "web": {
       "bundler": "metro",
@@ -29,7 +31,17 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
     ],
     "experiments": {
       "typedRoutes": true

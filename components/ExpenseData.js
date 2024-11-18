@@ -42,9 +42,9 @@ export const ExpenseProvider = ({children}) => {
     
     
 
-    const updateExpense = (id, updatedAmount, updatedItemName, selectedCategory) => {
+    const updateExpense = (id, updatedAmount, updatedItemName, selectedCategory, credDebt) => {
         const updatedExpenses = expenses.map((expense) => 
-        expense.id === id ? {...expense, amount:updatedAmount, itemName: updatedItemName, category: selectedCategory} : expense);
+        expense.id === id ? {...expense, amount:updatedAmount, itemName: updatedItemName, category: selectedCategory, type:credDebt} : expense);
         setExpenses(updatedExpenses);
         saveExpenses(updatedExpenses);
         Alert.alert('Info','Expense Updated');

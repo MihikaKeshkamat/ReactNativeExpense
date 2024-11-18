@@ -11,9 +11,9 @@ import React from 'react';
 import { StyleSheet} from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 
-const Tab = createBottomTabNavigator();
-const ExpenseStack = createStackNavigator(); //to handle nested screens
 
+const Tab = createBottomTabNavigator();
+const ExpenseStack = createStackNavigator(); 
 const ExpenseStackNavigator = () => {
     return (
         <ExpenseStack.Navigator>

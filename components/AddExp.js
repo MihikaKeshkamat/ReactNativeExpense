@@ -15,12 +15,15 @@ const AddExp = ({route, navigation}) => {
   const [editingId,setEditingId] = useState(null);
   const [editingExpense, setEditingExpense] = useState(null);
   const[isFocus,setIsFocus] = useState(false);
+  const [credisFocus,setCredisFocus] = useState(false);
   const [selected,setSelected] = useState([]);
   const [amountError, setamountError] = useState('');
   const [itemError, setItemError] = useState('');
   const [categoryError, setcategoryError] = useState('');
   const [selectedCategory,setSelectedCategory] = useState(null);
  const [zeroError,setZeroError] = useState('');
+ const [credDebt, setCredDebt] = useState('');
+ const [optionsError,setOptionsError] = useState('');
   const  categories = [
     {label:"Food", value:"Food"},
     {label:"Transport", value:"Transport"},
@@ -30,6 +33,10 @@ const AddExp = ({route, navigation}) => {
     {label:"Health", value:"Health"},
     {label:"Others", value:"Others"},
   ];
+  const options = [
+    {label:"Debit", value: "Debit"},
+    {label:"Credit", value: "Credit"},
+  ];
   const {expense} = route.params || {}; 
 
   useEffect(() => {
@@ -38,6 +45,7 @@ const AddExp = ({route, navigation}) => {
       setEditingId(expense.id)
       setAmount(expense.amount);
       setItemName(expense.itemName);
+      setCredDebt(expense.credDebt);
     } 
   }, [expense]);
 
@@ -59,25 +67,27 @@ const AddExp = ({route, navigation}) => {
       setcategoryError("Category is required");
       return;
     }
-    if(amount && selected && itemName) {
+    if(!credDebt) {
+      setOptionsError("Choose Credit or Debit");
+    }
+    if(amount && selected && itemName && credDebt) {
       if(expense) {
-        updateExpense(expense.id,amount,itemName,selectedCategory);
+        updateExpense(expense.id,amount,itemName,selectedCategory,credDebt);
       }
       else {
       addExpenses({
         amount: amount,
         category: selectedCategory,
         itemName: itemName,
+        type:credDebt,
       date: new Date().toISOString(),
       });
       }
       setAmount('');
       setItemName('');
       setEditingId(null);
-      // setamountError(null);
-      // amountError('');
-      // itemError('');
       setSelectedCategory(null);
+      setCredDebt(null);
       navigation.goBack();
     }
     
@@ -91,6 +101,7 @@ const AddExp = ({route, navigation}) => {
       setZeroError('');
       setcategoryError('');
       setSelectedCategory(null);
+      setCredDebt(null);
   }
 
   
@@ -128,7 +139,7 @@ const AddExp = ({route, navigation}) => {
 
     <View style={{flex:1,height:100}}></View>
     <View style={styles.amount}>
-       <Text style={{fontSize:24, fontWeight:'400'}} >Amount Spent</Text>
+       <Text style={{fontSize:20, fontWeight:'400'}} >Record Transaction</Text>
        <TextInput  placeholder='$               ' value={amount}   onChangeText={(numeric)=> setAmount(numeric)} style={styles.amountPlaceholder}/>
         {amountError ? <Text style={{color:'red'}}>{amountError}</Text>: null}
         {zeroError ? <Text style={{color:'red'}}>{zeroError}</Text>: null}
@@ -189,9 +200,51 @@ const AddExp = ({route, navigation}) => {
               selectedStyle={styles.selectedStyle}
               >
               </Dropdown>
+        {categoryError ? <Text style={{color:'red', textAlign:'center'}}>{categoryError}</Text>: null}
+
+              <Dropdown
+              style={[styles.dropdown, isFocus && {borderColor:'blue'}]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              search
+              data={options}
+              maxHeight={200}
+              labelField="label"
+              valueField="value"
+              placeholder={!credisFocus? 'Choose' : '...'}
+              searchPlaceholder="Search..."
+              value={credDebt}
+              onFocus={() => setCredisFocus(true)}
+              onBlur={()=> setIsFocus(false)}
+              onChange={item => {
+                setCredDebt(item.value);
+                setIsFocus(false);
+              }}
+              
+              renderLeftIcon={() => (
+                <Ionicons
+          name="checkmark-circle"
+          color="black" 
+          size={20}
+        />
+              )}
+              renderRightIcon={()=>(
+                <AntDesign
+                   style={styles.icon}
+                   color="black"
+                   name="Safety"
+                   size={20}
+                />
+              )}
+
+              selectedStyle={styles.selectedStyle}
+              >
+              </Dropdown>
+        {optionsError ? <Text style={{color:'red', textAlign:'center'}}>{optionsError}</Text>: null}
               
              </View>
-        {categoryError ? <Text style={{color:'red', textAlign:'center'}}>{categoryError}</Text>: null}
 
 
              <View style={styles.buttons}>
@@ -378,6 +431,8 @@ const styles = StyleSheet.create({
   category: {
       marginHorizontal:30,
       marginTop:20,
+      flexDirection:'column',
+      
   },
   dropdown: {
     height: 50,
@@ -386,6 +441,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderRadius:10,
     paddingHorizontal:10,
+    marginTop:10,
     
   },
   placeholderStyle: {

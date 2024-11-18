@@ -1,7 +1,19 @@
-import { registerRootComponent } from 'expo';
-import Layout from '../app/_layout';
 
-registerRootComponent(Layout);
+import React from 'react'
+import { NavigationContainer } from '@react-navigation/native';
+import Layout from './_layout';
+const index = () => {
+  return (
+        <NavigationContainer>
+          <Layout />
+        </NavigationContainer>
+      
+  );
+}
+
+export default index
+
+
 
 
 

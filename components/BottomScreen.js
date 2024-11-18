@@ -1,11 +1,11 @@
-import { View, TextInput, StyleSheet, Button, Text, Alert } from 'react-native';
+import { View, TextInput, StyleSheet, Button, Text, Alert, KeyboardAvoidingView } from 'react-native';
 import React, { useMemo, useRef, useCallback,useState,useEffect } from 'react';
 import {BottomSheetModalProvider,BottomSheetView,BottomSheetModal, BottomSheetBackdrop, TouchableOpacity} from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {FirebaseError} from '@react-native-firebase/app'
 
 const BottomScreen = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +15,7 @@ const BottomScreen = () => {
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(()=>['90%' ],[])
+  const [loading,setLoading] = useState(false);
   // callbacks
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
@@ -26,62 +27,88 @@ const BottomScreen = () => {
     (props) => (<BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} opacity={0.5} pressBehaviour="close"/>
   ),[]);
   
-  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const savedToken = await AsyncStorage.getItem('token');
-        if (savedToken) {
-          setToken(savedToken);
-          navigation.navigate('AccountSetup');
-        }
-      } catch (e) {
-        console.error('Failed to fetch the token', e);
-      }
-    };
-    checkToken();
-  }, [navigation]);
+  // useEffect(() => {
+  //   const checkToken = async () => {
+  //     try {
+  //       const savedToken = await AsyncStorage.getItem('token');
+  //       if (savedToken) {
+  //         setToken(savedToken);
+  //         navigation.navigate('AccountSetup');
+  //       }
+  //     } catch (e) {
+  //       console.error('Failed to fetch the token', e);
+  //     }
+  //   };
+  //   checkToken();
+  // }, [navigation]);
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-
-  const handleLogin = async () => {
-    if (!isValidEmail(email)) {
-      // Alert.alert('Invalid email', 'Please enter a valid email address.');
-      // return;
-      Alert.alert('Invalid Email', 'Please enter a valid email address');
-      return;
-    }
-    console.log('Email:', email);
-    console.log('Password:', password);
-
-    try {
-      setToken('abc123');
-      await AsyncStorage.setItem('username', email);
-      await AsyncStorage.setItem('token', 'abc123');
-      await AsyncStorage.setItem('name',name);
-    } catch (err) {
-      console.error('Error saving data:', err);
-    }
-
-    bottomSheetModalRef.current?.close();
-    navigation.navigate('AccountSetup');
-  };
-  getData = async() => {
-    try{
-      const value = await AsyncStorage.getItem('token')
-      const username = await AsyncStorage.getItem('username')
-      if(value!==null){
-         setToken({token: value})
-      }
-      if(value!==null){
-        setToken({username})
+  //firebase auth signUp
+  const signUp = async() => {
+     setLoading(true);
+     try{
+      await auth().createUserWithEmailAndPassword(email,password);
+      alert('Check your emails!');
+     }catch(e){
+      console.log(FirebaseError); 
+      alert('Registration failed: ' + FirebaseError)
+     }finally{
+      setLoading(false);
      }
-    } catch(e){
-      console.log(e)
+  }
+  //firebase auth signIn
+  const signIn = async() => {
+    setLoading(true);
+    try{
+      await auth().signInWithEmailAndPassword(email,password);
+    }catch(FirebaseError){
+      console.log(FirebaseError);
+      alert('Sign In Error: ' +FirebaseError);
+    }
+    finally{
+      setLoading(false);
     }
   }
+  
+  // const handleLogin = async () => {
+  //   if (!isValidEmail(email)) {
+  //     // Alert.alert('Invalid email', 'Please enter a valid email address.');
+  //     // return;
+  //     Alert.alert('Invalid Email', 'Please enter a valid email address');
+  //     return;
+  //   }
+  //   console.log('Email:', email);
+  //   console.log('Password:', password);
+
+  //   try {
+  //     setToken('abc123');
+  //     await AsyncStorage.setItem('username', email);
+  //     await AsyncStorage.setItem('token', 'abc123');
+  //     await AsyncStorage.setItem('name',name);
+  //   } catch (err) {
+  //     console.error('Error saving data:', err);
+  //   }
+
+  //   bottomSheetModalRef.current?.close();
+  //   navigation.navigate('AccountSetup');
+  // };
+  // getData = async() => {
+  //   try{
+  //     const value = await AsyncStorage.getItem('token')
+  //     const username = await AsyncStorage.getItem('username')
+  //     if(value!==null){
+  //        setToken({token: value})
+  //     }
+  //     if(value!==null){
+  //       setToken({username})
+  //    }
+  //   } catch(e){
+  //     console.log(e)
+  //   }
+  // }
   return (
     <GestureHandlerRootView style={styles.container}>
         <BottomSheetModalProvider>
@@ -116,11 +143,13 @@ const BottomScreen = () => {
               </TouchableOpacity>
               </View>
               <View>
-                <TouchableOpacity 
+                {/* <TouchableOpacity 
                 onPress={handleLogin} style={{backgroundColor:'#947099',padding:10,borderRadius:10,marginBottom:30}}>
                   <Text style={{textAlign:'center',fontWeight:'700',fontSize:18}}>Login</Text>
 
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+                <Button onPress={signUp}>Sign Up</Button>
+                <Button onPress={signIn}>Sign In</Button>
               </View>
             </BottomSheetView>
         </BottomSheetModal>
