@@ -11,7 +11,7 @@ import com.facebook.react.ReactHost
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
-import io.invertase.firebase.app.ReactNativeFirebaseAppPackage;
+
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
 
@@ -23,9 +23,8 @@ class MainApplication : Application(), ReactApplication {
           override fun getPackages(): List<ReactPackage> {
             // Packages that cannot be autolinked yet can be added manually here, for example:
             // packages.add(new MyReactNativePackage());
-            val packages = PackageList(this).packages.toMutableList()
-             packages.add(ReactNativeFirebaseAppPackage())
-            return packages
+            
+            return PackageList(this).packages
           }
 
           override fun getJSMainModuleName(): String = ".expo/.virtual-metro-entry"

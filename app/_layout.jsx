@@ -13,53 +13,53 @@ import Budget from '@/components/Budget';
 import Tabs from '../components/Tabs';
 import Analysis from '@/components/Analysis';
 import AccountSetBottom from '../components/AccountSetBottom';
-import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+
 import { View, ActivityIndicator } from 'react-native';
 const Stack = createStackNavigator();
-
 const Layout = () => {
-  const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState(null);
+  
+//   const [initializing, setInitializing] = useState(true); //if app is checking authentication state
+//   const [abc, setAbc] = useState<FirebaseAuthTypes.User | null>(null); //user is set to null and will hold authenticated user
+// //currentUser represents the user object if a user is logged in or null if no user is logged in
+//   useEffect(() => {
+//     const subscriber = auth().onAuthStateChanged((currentUser) => {
+//       setAbc(currentUser);
+//       if (initializing) setInitializing(false);
+//     });
 
-  function onAuthStateChanged(user) {
-    setUser(user);
-    if (initializing) setInitializing(false);
-  }
+//     return subscriber;
+//   }, [initializing]);
+
+//   if (initializing) {
+//     return (
+//       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+//         <ActivityIndicator size="large" />
+//       </View>
+//     );
+//   }
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    // Unsubscribe on unmount
-    return subscriber;
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        setIsLoggedIn(!!token);
+      } catch (error) {
+        console.log('Error checking login status:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkLoginStatus();
   }, []);
-  if (initializing) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+
+  if (isLoading) {
+    return null; 
   }
-
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [isLoading, setIsLoading] = useState(true);
-
-  // useEffect(() => {
-  //   const checkLoginStatus = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem('token');
-  //       setIsLoggedIn(!!token);
-  //     } catch (error) {
-  //       console.log('Error checking login status:', error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   checkLoginStatus();
-  // }, []);
-
-  // if (isLoading) {
-  //   return null; 
-  // }
 
   const AuthStack = () => (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -103,7 +103,13 @@ const Layout = () => {
   return (
     <ExpenseProvider>
     <NavigationContainer>
-    {user ? <AppStack /> : <AuthStack />}
+      {/* <Stack.Navigator> */}
+        {isLoggedIn? (
+          <AppStack/>
+        ): (
+         <AuthStack/>
+        )}
+      {/* </Stack.Navigator> */}
     </NavigationContainer>
     </ExpenseProvider>
   );

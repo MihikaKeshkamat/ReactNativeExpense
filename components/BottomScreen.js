@@ -6,6 +6,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FirebaseError} from '@react-native-firebase/app'
+import auth from '@react-native-firebase/auth';
 
 const BottomScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -47,15 +48,17 @@ const BottomScreen = ({navigation}) => {
     return emailRegex.test(email);
   };
   //firebase auth signUp
-  const signUp = async() => {
+  const signUp = () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
      setLoading(true);
      try{
-      await auth().createUserWithEmailAndPassword(email,password);
-      alert('Check your emails!');
+      auth().
+      createUserWithEmailAndPassword(email,password)
+      .then(() => console.log("User signed up"));
+      
      }catch(e){
       console.log(FirebaseError); 
       alert('Registration failed: ' + FirebaseError)
@@ -64,14 +67,18 @@ const BottomScreen = ({navigation}) => {
      }
   }
   //firebase auth signIn
-  const signIn = async() => {
+  const signIn = () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
     setLoading(true);
     try{
-      await auth().signInWithEmailAndPassword(email,password);
+      auth()
+      .signInWithEmailAndPassword(email,password)
+      .then(() => {
+        console.log('User Signed In');
+      })
     }catch(FirebaseError){
       console.log(FirebaseError);
       alert('Sign In Error: ' +FirebaseError);
@@ -80,7 +87,7 @@ const BottomScreen = ({navigation}) => {
       setLoading(false);
     }
   }
-  
+
   // const handleLogin = async () => {
   //   if (!isValidEmail(email)) {
   //     // Alert.alert('Invalid email', 'Please enter a valid email address.');
@@ -117,6 +124,7 @@ const BottomScreen = ({navigation}) => {
   //     console.log(e)
   //   }
   // }
+  
   return (
     <GestureHandlerRootView style={styles.container}>
         <BottomSheetModalProvider>

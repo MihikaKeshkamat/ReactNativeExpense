@@ -41,8 +41,16 @@
         }
       ],
       "@react-native-firebase/app",
-      "@react-native-firebase/auth"
+      "@react-native-firebase/auth",
+
+      [
+        "@react-native-firebase/app",
+        {
+          "androidClientId": "YOUR_ANDROID_CLIENT_ID"
+        }
+      ]
     ],
+    
     "experiments": {
       "typedRoutes": true
     }
