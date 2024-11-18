@@ -7,12 +7,12 @@ import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FirebaseError} from '@react-native-firebase/app'
 
-const BottomScreen = () => {
+const BottomScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name,setName] = useState('');
   const [token,setToken] = useState('')
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
   const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(()=>['90%' ],[])
   const [loading,setLoading] = useState(false);
@@ -48,6 +48,10 @@ const BottomScreen = () => {
   };
   //firebase auth signUp
   const signUp = async() => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
      setLoading(true);
      try{
       await auth().createUserWithEmailAndPassword(email,password);
@@ -61,6 +65,10 @@ const BottomScreen = () => {
   }
   //firebase auth signIn
   const signIn = async() => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
     setLoading(true);
     try{
       await auth().signInWithEmailAndPassword(email,password);
@@ -142,14 +150,30 @@ const BottomScreen = () => {
                 <Text style={{color:'#7E8287',fontWeight:'700'}}>Forgot?</Text>
               </TouchableOpacity>
               </View>
-              <View>
+              <View style={{flexDirection: 'row', gap:20}}>
                 {/* <TouchableOpacity 
                 onPress={handleLogin} style={{backgroundColor:'#947099',padding:10,borderRadius:10,marginBottom:30}}>
                   <Text style={{textAlign:'center',fontWeight:'700',fontSize:18}}>Login</Text>
 
                 </TouchableOpacity> */}
-                <Button onPress={signUp}>Sign Up</Button>
-                <Button onPress={signIn}>Sign In</Button>
+                <TouchableOpacity 
+        style={styles.button} 
+        onPress={signIn}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? 'Loading...' : 'Sign In'}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={[styles.button, styles.signUpButton]} 
+        onPress={signUp}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? 'Loading...' : 'Sign Up'}
+        </Text>
+      </TouchableOpacity>
               </View>
             </BottomSheetView>
         </BottomSheetModal>

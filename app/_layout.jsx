@@ -13,65 +13,58 @@ import Budget from '@/components/Budget';
 import Tabs from '../components/Tabs';
 import Analysis from '@/components/Analysis';
 import AccountSetBottom from '../components/AccountSetBottom';
-import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth'
+import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import { View, ActivityIndicator } from 'react-native';
 const Stack = createStackNavigator();
 
 const Layout = () => {
-  const [initializing,setInitializing]= useState(true);
-  const [user,setUser] = useState<FirebaseAuthTypes.User | null> (null);
-  useEffect(() => {
-    const subscriber = auth().onAuthStateChanged((user) => {
-      console.log('onAuthStateChanged', user);
-      setUser(user);
-      if (initializing) setInitializing(false);
-    });
+  const [initializing, setInitializing] = useState(true);
+  const [user, setUser] = useState(null);
 
-    // Unsubscribe on cleanup
-    return () => subscriber();
-  }, [initializing]);
-
-  if (initializing) {
-    return <Text>Loading...</Text>;
+  function onAuthStateChanged(user) {
+    setUser(user);
+    if (initializing) setInitializing(false);
   }
-  if (!user) {
-    return <Text>No user is signed in</Text>;
-  }
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        setIsLoggedIn(!!token);
-      } catch (error) {
-        console.log('Error checking login status:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkLoginStatus();
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    // Unsubscribe on unmount
+    return subscriber;
   }, []);
-
-  if (isLoading) {
-    return null; 
+  if (initializing) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
-  return (
-    <ExpenseProvider>
-    <NavigationContainer>
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [isLoading, setIsLoading] = useState(true);
 
-    <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-          initialRouteName={isLoggedIn ? 'Tabs' : 'SplashScreen'}
-        >
-          {/* Auth Stack */}
-          <Stack.Screen 
-            name="SplashScreen" 
-            component={SplashScreen} 
-          />
-          <Stack.Screen 
+  // useEffect(() => {
+  //   const checkLoginStatus = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem('token');
+  //       setIsLoggedIn(!!token);
+  //     } catch (error) {
+  //       console.log('Error checking login status:', error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   checkLoginStatus();
+  // }, []);
+
+  // if (isLoading) {
+  //   return null; 
+  // }
+
+  const AuthStack = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SplashScreen" component={SplashScreen} />
+      <Stack.Screen 
             name="AccountSetup" 
             component={AccountSetup}
             options={{ headerShown: true }}
@@ -81,9 +74,12 @@ const Layout = () => {
             component={AccountSetBottom}
             options={{ headerShown: true }}
           />
-          
-          {/* Main App Stack */}
-          <Stack.Screen 
+    </Stack.Navigator>
+  );
+
+  const AppStack = () => (
+    <Stack.Navigator>
+      <Stack.Screen 
             name="Tabs" 
             component={Tabs} 
           />
@@ -102,54 +98,12 @@ const Layout = () => {
             component={Expenses}
             options={{ headerShown: true }}
           />
-        </Stack.Navigator>
-      {/* <Stack.Navigator initialRouteName={isLoggedIn ? 'Tabs' : 'SplashScreen'}>
-        {!isLoggedIn ? (
-          <>
-            <Stack.Screen
-              name="SplashScreen"
-              component={SplashScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="AccountSetup"
-              component={AccountSetup}
-
-            />
-            <Stack.Screen
-              name="AccountSetBottom"
-              component={AccountSetBottom}
-
-            />
-            
-          </>
-        ) : (
-          <>
-          <Stack.Screen
-          name='Tabs'
-          component={Tabs}  
-          options = {{headerShown: false}}/> 
-        
-         <Stack.Screen
-          name="HomeScreen" 
-          component={HomeScreen}  
-          // options = {{headerShown: false}}
-          />   
-          
-          
-           <Stack.Screen
-          name="AddExp" 
-          component={AddExp}  
-          // options = {{headerShown: false}}
-          /> 
-          <Stack.Screen
-          name="Expenses" 
-          component={Expenses}  
-          // options = {{headerShown: false}}
-          />  
-         </>
-        )}
-      </Stack.Navigator> */}
+    </Stack.Navigator>
+  );
+  return (
+    <ExpenseProvider>
+    <NavigationContainer>
+    {user ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
     </ExpenseProvider>
   );
