@@ -1,9 +1,10 @@
 package com.anonymous.ExpenseManager
-import io.invertase.firebase.app.ReactNativeFirebaseAppPackage
-import io.invertase.firebase.auth.ReactNativeFirebaseAuthPackage
+
 import android.app.Application
 import android.content.res.Configuration
-
+import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
+    import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
+    import io.invertase.firebaseapp.ReactNativeFirebaseAppPackage;
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeHost
@@ -22,12 +23,10 @@ class MainApplication : Application(), ReactApplication {
         this,
         object : DefaultReactNativeHost(this) {
           override fun getPackages(): List<ReactPackage> {
-            val packages = PackageList(this).packages.toMutableList() 
-            // Packages that cannot be autolinked yet can be added manually here 
-            packages.add(ReactNativeFirebaseAppPackage())
-             packages.add(ReactNativeFirebaseAuthPackage())
-              return packages
-            
+            // Packages that cannot be autolinked yet can be added manually here, for example:
+            packages.add(new MyReactNativePackage());
+          
+            return PackageList(this).packages
           }
 
           override fun getJSMainModuleName(): String = ".expo/.virtual-metro-entry"
@@ -37,7 +36,6 @@ class MainApplication : Application(), ReactApplication {
           override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
           override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
       }
-
   )
 
   override val reactHost: ReactHost

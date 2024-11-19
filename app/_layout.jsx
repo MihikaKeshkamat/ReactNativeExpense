@@ -13,53 +13,74 @@ import Budget from '@/components/Budget';
 import Tabs from '../components/Tabs';
 import Analysis from '@/components/Analysis';
 import AccountSetBottom from '../components/AccountSetBottom';
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
-
-import { View, ActivityIndicator } from 'react-native';
+import { auth } from '../components/firebase'; // Adjust the path if necessary
+import { onAuthStateChanged } from '@react-native-firebase/auth';
 const Stack = createStackNavigator();
 const Layout = () => {
+  // const [initializing, setInitializing] = useState(true);
+  // const [user, setUser] = useState(null);
+  // const [email, setEmail] = useState('');
+  // const [password, setPassword] = useState('');
+  // const [isSignUp, setIsSignUp] = useState(false);
+
+  // useEffect(() => {
+  //   const subscriber = onAuthStateChanged(auth, (currentUser) => {
+  //     setUser(currentUser);
+  //     if (initializing) setInitializing(false);
+  //   });
+  //   return subscriber; // Unsubscribe on unmount
+  // }, [initializing]);
+
   
-//   const [initializing, setInitializing] = useState(true); //if app is checking authentication state
-//   const [abc, setAbc] = useState<FirebaseAuthTypes.User | null>(null); //user is set to null and will hold authenticated user
-// //currentUser represents the user object if a user is logged in or null if no user is logged in
-//   useEffect(() => {
-//     const subscriber = auth().onAuthStateChanged((currentUser) => {
-//       setAbc(currentUser);
-//       if (initializing) setInitializing(false);
-//     });
+  // if (initializing) {
+  //   return (
+  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+  //       <ActivityIndicator size="large" />
+  //     </View>
+  //   );
+  // }
 
-//     return subscriber;
-//   }, [initializing]);
-
-//   if (initializing) {
-//     return (
-//       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//         <ActivityIndicator size="large" />
-//       </View>
-//     );
-//   }
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [initializing, setInitializing] = useState(true); //if app is checking authentication state
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null); //user is set to null and will hold authenticated user
+//currentUser represents the user object if a user is logged in or null if no user is logged in
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        setIsLoggedIn(!!token);
-      } catch (error) {
-        console.log('Error checking login status:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    const subscriber = auth().onAuthStateChanged((currentUser) => {
+      setAbc(currentUser);
+      if (initializing) setInitializing(false);
+    });
 
-    checkLoginStatus();
-  }, []);
+    return subscriber;
+  }, [initializing]);
 
-  if (isLoading) {
-    return null; 
+  if (initializing) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
+
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [isLoading, setIsLoading] = useState(true);
+
+  // useEffect(() => {
+  //   const checkLoginStatus = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem('token');
+  //       setIsLoggedIn(!!token);
+  //     } catch (error) {
+  //       console.log('Error checking login status:', error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   checkLoginStatus();
+  // }, []);
+
+  // if (isLoading) {
+  //   return null; 
+  // }
 
   const AuthStack = () => (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -104,7 +125,7 @@ const Layout = () => {
     <ExpenseProvider>
     <NavigationContainer>
       {/* <Stack.Navigator> */}
-        {isLoggedIn? (
+        {user? (
           <AppStack/>
         ): (
          <AuthStack/>

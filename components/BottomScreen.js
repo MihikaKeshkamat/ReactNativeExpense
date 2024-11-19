@@ -6,8 +6,9 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FirebaseError} from '@react-native-firebase/app'
-import auth from '@react-native-firebase/auth';
-
+// import auth from '@react-native-firebase/auth';
+import { auth } from '../components/firebase'; // Adjust the path if necessary
+import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from '@react-native-firebase/auth';
 const BottomScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,6 +48,32 @@ const BottomScreen = ({navigation}) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
+
+
+  // const handleAuth = () => {
+  //   if (isSignUp) {
+  //     createUserWithEmailAndPassword(auth, email, password)
+  //       .then((userCredential) => {
+  //         setUser(userCredential.user);
+  //       })
+  //       .catch((error) => {
+  //         console.error(error);
+  //       });
+  //   } else {
+  //     signInWithEmailAndPassword(auth, email, password)
+  //       .then((userCredential) => {
+  //         setUser(userCredential.user);
+  //       })
+  //       .catch((error) => {
+  //         console.error(error);
+  //       });
+  //   }
+  // };
+
+  // const handleSignOut = () => {
+  //   signOut(auth).then(() => setUser(null));
+  // };
+
   //firebase auth signUp
   const signUp = () => {
     if (!email || !password) {
