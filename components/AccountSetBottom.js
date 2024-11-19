@@ -7,7 +7,7 @@ import { AntDesign } from '@expo/vector-icons';
 import Home from '../components/HomeScreen';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import auth from '@react-native-firebase/auth'
 
 const Account = [
     {label: "Checking Account", value:'1'},
@@ -205,23 +205,48 @@ const AccountSetBottom = () => {
   //     console.error('Error saving balance:', error);
   //   }
   // };
+  const handleAccountSetup = async () => {
+    try {
+      const user = auth().currentUser;
+
+      if (user) {
+        // Example: Save setup completion flag in the user's profile
+        await user.updateProfile({
+          displayName: name,
+          balance: balance,
+        });
+
+        Alert.alert('Account Setup Complete', 'You can now use the app!');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
 
   const handleLogin = async () => {
     try {
-      // Save all required data first
       await Promise.all([
         AsyncStorage.setItem('token', 'user_logged_in'),
         saveName(),
         saveBalance()
       ]);
-      
-      // Then update the login state and navigate
+      const user = auth().currentUser;
+      if (user) {
+        await user.updateProfile({
+          ...user.providerData[0],
+          isAccountSetup: true
+        });
+      }
+
+      // Navigate to Tabs
       setIsLoggedIn(true);
-      // Make sure we're using the correct screen name that matches our navigator
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Tabs' }],
+        routes: [{ name: 'Tabs' }]
       });
+
+      
+      // navigation.navigate('Tabs');
     } catch (error) {
       console.error('Error during login:', error);
     }
@@ -252,10 +277,9 @@ const AccountSetBottom = () => {
     const isBalanceValid = balanceRequired();
 
     if (isNameValid && isBalanceValid) {
-      await handleLogin();
-      saveName();
-      saveBalance();
-    }
+     
+          await handleLogin();
+        } 
   };
 
   return (

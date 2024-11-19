@@ -1,11 +1,13 @@
-import { View, Text, StyleSheet,TextInput,Image,useWindowDimensions,TouchableOpacity,ScrollView,FlatList } from 'react-native'
+import { View, Text, StyleSheet,TextInput,Image,useWindowDimensions,TouchableOpacity,ScrollView,FlatList, Alert} from 'react-native'
 import React,{useState, useEffect} from 'react'
 import {useNavigation} from '@react-navigation/native';
 import {useExpenses} from '../components/ExpenseData';
 import {Ionicons} from '@expo/vector-icons';
 import {Dropdown } from 'react-native-element-dropdown';
 import { AntDesign } from '@expo/vector-icons';
-
+import {ref, serverTimestamp, push,set , off } from '@react-native-firebase/database';
+import database from '@react-native-firebase/database';
+import { firebase } from '@react-native-firebase/database';
 
 
 const AddExp = ({route, navigation}) => {
@@ -80,6 +82,10 @@ const AddExp = ({route, navigation}) => {
         category: selectedCategory,
         itemName: itemName,
         type:credDebt,
+        // itemName: 'Groceries',
+        // amount:'100',
+        // category:'Food',
+        // type:'debit',
       date: new Date().toISOString(),
       });
       }
@@ -90,8 +96,9 @@ const AddExp = ({route, navigation}) => {
       setCredDebt(null);
       navigation.goBack();
     }
-    
   };
+
+  
   const cancelButton = () => {
     setAmount('');
       setItemName('');
@@ -103,7 +110,26 @@ const AddExp = ({route, navigation}) => {
       setSelectedCategory(null);
       setCredDebt(null);
   }
+  
+  
 
+  const handleAddData = async() => {
+    try{
+     const response = await firebase.app().
+     database('https://com-anonymous-expensemanager.asia-southeast1.firebasedatabase.app/')
+     .ref('expenses/amount/item/category/type')
+     .set({
+      Amount : amount,
+      ItemName: itemName,
+      category: selectedCategory,
+      type: credDebt,
+     });
+
+     console.log(response);
+    }catch(err) {
+      console.log(err)
+    }
+  }
   
   const getCurrentDateTime = () => {
     const now = new Date();

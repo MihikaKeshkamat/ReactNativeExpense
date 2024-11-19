@@ -7,11 +7,13 @@ import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FirebaseError} from '@react-native-firebase/app'
 // import auth from '@react-native-firebase/auth';
-import { auth } from '../components/firebase'; // Adjust the path if necessary
-import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from '@react-native-firebase/auth';
+// import { auth } from '../components/firebase'; // Adjust the path if necessary
+import auth from '@react-native-firebase/auth';
+
 const BottomScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [name,setName] = useState('');
   const [token,setToken] = useState('')
   // const navigation = useNavigation();
@@ -75,45 +77,45 @@ const BottomScreen = ({navigation}) => {
   // };
 
   //firebase auth signUp
-  const signUp = () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-     setLoading(true);
-     try{
-      auth().
-      createUserWithEmailAndPassword(email,password)
-      .then(() => console.log("User signed up"));
+  // const signUp = () => {
+  //   if (!email || !password) {
+  //     Alert.alert('Error', 'Please fill in all fields');
+  //     return;
+  //   }
+  //    setLoading(true);
+  //    try{
+  //     auth().
+  //     createUserWithEmailAndPassword(email,password)
+  //     .then(() => console.log("User signed up"));
       
-     }catch(e){
-      console.log(FirebaseError); 
-      alert('Registration failed: ' + FirebaseError)
-     }finally{
-      setLoading(false);
-     }
-  }
-  //firebase auth signIn
-  const signIn = () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-    setLoading(true);
-    try{
-      auth()
-      .signInWithEmailAndPassword(email,password)
-      .then(() => {
-        console.log('User Signed In');
-      })
-    }catch(FirebaseError){
-      console.log(FirebaseError);
-      alert('Sign In Error: ' +FirebaseError);
-    }
-    finally{
-      setLoading(false);
-    }
-  }
+  //    }catch(e){
+  //     console.log(FirebaseError); 
+  //     alert('Registration failed: ' + FirebaseError)
+  //    }finally{
+  //     setLoading(false);
+  //    }
+  // }
+  // //firebase auth signIn
+  // const signIn = () => {
+  //   if (!email || !password) {
+  //     Alert.alert('Error', 'Please fill in all fields');
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try{
+  //     auth()
+  //     .signInWithEmailAndPassword(email,password)
+  //     .then(() => {
+  //       console.log('User Signed In');
+  //     })
+  //   }catch(FirebaseError){
+  //     console.log(FirebaseError);
+  //     alert('Sign In Error: ' +FirebaseError);
+  //   }
+  //   finally{
+  //     setLoading(false);
+  //   }
+  // }
 
   // const handleLogin = async () => {
   //   if (!isValidEmail(email)) {
@@ -152,6 +154,23 @@ const BottomScreen = ({navigation}) => {
   //   }
   // }
   
+
+  const handleAuth = async ({navigation}) => {
+    try {
+      if (isSignUp) {
+        // Sign-Up Logic
+        await auth().createUserWithEmailAndPassword(email, password);
+        Alert.alert('Sign-Up Successful', 'You can now log in.');
+      } else {
+        // Sign-In Logic
+        await auth().signInWithEmailAndPassword(email, password);
+        Alert.alert('Login Successful');
+        navigation.replace('AccountSetup'); // Navigate to Layout
+      }
+    } catch (error) {
+      Alert.alert('Authentication Error', error.message);
+    }
+  };
   return (
     <GestureHandlerRootView style={styles.container}>
         <BottomSheetModalProvider>
@@ -186,29 +205,15 @@ const BottomScreen = ({navigation}) => {
               </TouchableOpacity>
               </View>
               <View style={{flexDirection: 'row', gap:20}}>
-                {/* <TouchableOpacity 
-                onPress={handleLogin} style={{backgroundColor:'#947099',padding:10,borderRadius:10,marginBottom:30}}>
-                  <Text style={{textAlign:'center',fontWeight:'700',fontSize:18}}>Login</Text>
+               
 
-                </TouchableOpacity> */}
-                <TouchableOpacity 
-        style={styles.button} 
-        onPress={signIn}
-        disabled={loading}
+<Button title={isSignUp ? 'Sign Up' : 'Login'} onPress={handleAuth} />
+      <Text
+        style={styles.toggleText}
+        onPress={() => setIsSignUp(!isSignUp)}
       >
-        <Text style={styles.buttonText}>
-          {loading ? 'Loading...' : 'Sign In'}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-        style={[styles.button, styles.signUpButton]} 
-        onPress={signUp}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Loading...' : 'Sign Up'}
-        </Text>
-      </TouchableOpacity>
+        {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+      </Text>
               </View>
             </BottomSheetView>
         </BottomSheetModal>

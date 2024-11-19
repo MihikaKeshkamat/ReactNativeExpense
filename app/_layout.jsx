@@ -13,124 +13,136 @@ import Budget from '@/components/Budget';
 import Tabs from '../components/Tabs';
 import Analysis from '@/components/Analysis';
 import AccountSetBottom from '../components/AccountSetBottom';
-import { auth } from '../components/firebase'; // Adjust the path if necessary
+import auth from '@react-native-firebase/auth'; // Adjust the path if necessary
 import { onAuthStateChanged } from '@react-native-firebase/auth';
+
+import { View, ActivityIndicator } from 'react-native';
 const Stack = createStackNavigator();
 const Layout = () => {
-  // const [initializing, setInitializing] = useState(true);
-  // const [user, setUser] = useState(null);
-  // const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
-  // const [isSignUp, setIsSignUp] = useState(false);
-
-  // useEffect(() => {
-  //   const subscriber = onAuthStateChanged(auth, (currentUser) => {
-  //     setUser(currentUser);
-  //     if (initializing) setInitializing(false);
-  //   });
-  //   return subscriber; // Unsubscribe on unmount
-  // }, [initializing]);
+  const [initializing, setInitializing] = useState(true);
+  const [user, setUser] = useState(null);
+  const [isAccountSetup, setIsAccountSetup] = useState(false);
 
   
-  // if (initializing) {
-  //   return (
-  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-  //       <ActivityIndicator size="large" />
-  //     </View>
-  //   );
-  // }
-
-  const [initializing, setInitializing] = useState(true); //if app is checking authentication state
-  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null); //user is set to null and will hold authenticated user
-//currentUser represents the user object if a user is logged in or null if no user is logged in
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged((currentUser) => {
-      setAbc(currentUser);
-      if (initializing) setInitializing(false);
+    const unsubscribe = auth().onAuthStateChanged(async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        
+        try {
+          // Check if account is setup from AsyncStorage
+          // const accountSetup = await AsyncStorage.getItem('isAccountSetup');
+          // setIsAccountSetup(accountSetup === 'true');
+          const [userName, userBalance, accountSetup] = await Promise.all([
+            AsyncStorage.getItem('userName'),
+            AsyncStorage.getItem('userBalance'),
+            AsyncStorage.getItem('isAccountSetup')
+          ]);
+          const isSetupComplete = 
+          userName && 
+          userBalance && 
+          parseFloat(userBalance) > 0 && 
+          accountSetup === 'true';
+
+        setIsAccountSetup(isSetupComplete);
+        } catch (error) {
+          console.error('Error checking account setup status:', error);
+          setIsAccountSetup(false);
+        }finally {
+          setInitializing(false);
+        }
+      }
+      
+      else {
+        setInitializing(false);
+      } 
     });
 
-    return subscriber;
+    return unsubscribe; // Cleanup the listener on unmount
   }, [initializing]);
 
   if (initializing) {
+    // Show a loading indicator while determining authentication state
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
 
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [isLoading, setIsLoading] = useState(true);
-
-  // useEffect(() => {
-  //   const checkLoginStatus = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem('token');
-  //       setIsLoggedIn(!!token);
-  //     } catch (error) {
-  //       console.log('Error checking login status:', error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   checkLoginStatus();
-  // }, []);
-
-  // if (isLoading) {
-  //   return null; 
-  // }
-
-  const AuthStack = () => (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SplashScreen" component={SplashScreen} />
-      <Stack.Screen 
-            name="AccountSetup" 
-            component={AccountSetup}
-            options={{ headerShown: true }}
-          />
-          <Stack.Screen 
-            name="AccountSetBottom" 
-            component={AccountSetBottom}
-            options={{ headerShown: true }}
-          />
-    </Stack.Navigator>
-  );
-
-  const AppStack = () => (
-    <Stack.Navigator>
-      <Stack.Screen 
-            name="Tabs" 
-            component={Tabs} 
-          />
-          <Stack.Screen 
-            name="HomeScreen" 
-            component={HomeScreen}
-            options={{ headerShown: true }}
-          />
-          <Stack.Screen 
-            name="AddExp" 
-            component={AddExp}
-            options={{ headerShown: true }}
-          />
-          <Stack.Screen 
-            name="Expenses" 
-            component={Expenses}
-            options={{ headerShown: true }}
-          />
-    </Stack.Navigator>
-  );
   return (
     <ExpenseProvider>
     <NavigationContainer>
-      {/* <Stack.Navigator> */}
-        {user? (
-          <AppStack/>
-        ): (
-         <AuthStack/>
-        )}
-      {/* </Stack.Navigator> */}
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {!user ? (
+            // Auth Stack
+            <>
+              <Stack.Screen
+                name="SplashScreen"
+                component={SplashScreen}
+                options={{ headerShown: false }}
+              />
+              
+            </>
+          ) : !isAccountSetup ? (
+            // Account Setup Stack
+            <>
+              <Stack.Screen
+                name="AccountSetup"
+                component={AccountSetup}
+                options={{ 
+                  headerShown: true,
+                  headerTitle: 'Setup Account',
+                  headerLeft: null, // Prevent going back
+                }}
+              />
+              <Stack.Screen
+                name="Tabs"
+                component={Tabs}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="HomeScreen"
+                component={HomeScreen}
+                options={{ headerShown: true }}
+              />
+              <Stack.Screen
+                name="AddExp"
+                component={AddExp}
+                options={{ headerShown: true }}
+              />
+              <Stack.Screen
+                name="Expenses"
+                component={Expenses}
+                options={{ headerShown: true }}
+              />
+            </>
+          ) : (
+            // Main App Stack
+            <>
+              <Stack.Screen
+                name="Tabs"
+                component={Tabs}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="HomeScreen"
+                component={HomeScreen}
+                options={{ headerShown: true }}
+              />
+              <Stack.Screen
+                name="AddExp"
+                component={AddExp}
+                options={{ headerShown: true }}
+              />
+              <Stack.Screen
+                name="Expenses"
+                component={Expenses}
+                options={{ headerShown: true }}
+              />
+            </>
+          )}
+        </Stack.Navigator>
     </NavigationContainer>
     </ExpenseProvider>
   );

@@ -3,7 +3,7 @@ import React, {useState, useEffect} from 'react'
 import {Dropdown } from 'react-native-element-dropdown';
 import {Ionicons } from '@expo/vector-icons';
 import {useExpenses} from '../components/ExpenseData';
-
+import { getDatabase, ref, onValue, off } from '@react-native-firebase/database';
 const Months = [
   {label: "January", value: "1"},
   {label: "February", value: "2"},
@@ -29,6 +29,7 @@ const Expenses = ({navigation, route}) => {
   const [selectedCategory,setSelectedCategory] = useState(null);
   const filter = route.params?.filter || null;
   const [filteredExpenses,setFilteredExpenses] = useState([]);
+  
  useEffect(() => {
   filterExpenses();
  },[expenses,filter]);
