@@ -7,7 +7,6 @@ import { useNavigation } from '@react-navigation/native'
 const HomeScreen = ({transactions}) => {
   const [name,setName] = useState('');
   const [balance,setBalance] = useState('');
-  // const [transactions,setTransactions] = useState([]);
   const [totalExpenses, setTotalExpenses] = useState('0');
   const [totalIncome,setTotalIncome] = useState(0);
   const {expenses} = useExpenses();
@@ -73,7 +72,7 @@ const HomeScreen = ({transactions}) => {
     navigation.navigate('Expenses', { filter: 'Credit' });
   };
 
-  // Debug function
+  
   const handleExpensePress = () => {
     console.log('Expense tile pressed');
     navigation.navigate('Expenses', { filter: 'Debit' });

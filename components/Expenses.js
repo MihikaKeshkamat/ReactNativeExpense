@@ -3,7 +3,9 @@ import React, {useState, useEffect} from 'react'
 import {Dropdown } from 'react-native-element-dropdown';
 import {Ionicons } from '@expo/vector-icons';
 import {useExpenses} from '../components/ExpenseData';
-import { getDatabase, ref, onValue, off } from '@react-native-firebase/database';
+import { snapshot } from '@react-native-firebase/database';
+import {firebase} from '@react-native-firebase/database'
+import auth from '@react-native-firebase/auth';
 const Months = [
   {label: "January", value: "1"},
   {label: "February", value: "2"},
@@ -20,28 +22,37 @@ const Months = [
 ];
 
 
-
 const Expenses = ({navigation, route}) => {
+  const currentUserId = auth().currentUser?.uid;
+
   const[isFocus,setIsFocus] = useState(false);
   const [selected,setSelected] = useState(null);
-  const {expenses,  deleteExpense} = useExpenses();
+  const {expenses,  deleteExpense, setExpenses} = useExpenses();
   const [editingExpense, setEditingExpense] = useState(null);
   const [selectedCategory,setSelectedCategory] = useState(null);
-  const filter = route.params?.filter || null;
+  const filter = route.params?.filter || null ;
   const [filteredExpenses,setFilteredExpenses] = useState([]);
   
- useEffect(() => {
-  filterExpenses();
- },[expenses,filter]);
+//  useEffect(() => {
+//   filterExpenses();
+//  },[expenses,filter]);
 
- const filterExpenses = () => {
-  if(!filter) {
-    setFilteredExpenses(expenses);
-  }else {
-    const filtered = expenses.filter(expense => expense.type === filter);
-    setFilteredExpenses(filtered);
+//  const filterExpenses = () => {
+//   if(!filter) {
+//     setFilteredExpenses(expenses);
+//   }else {
+//     const filtered = expenses.filter(expense => expense.type === filter);
+//     setFilteredExpenses(filteredExpenses);
+//   }
+//  };
+useEffect(() => {
+  if (expenses && filter) {
+    const filteredData = expenses.filter((expense) => expense.type === filter);
+    setFilteredExpenses(filteredData);
+  } else {
+    setFilteredExpenses(expenses); 
   }
- };
+}, [expenses, filter]);
 
   const  categories = [
     {label:"Food", value:"Food"},
@@ -65,14 +76,26 @@ const Expenses = ({navigation, route}) => {
     ]);
     
   }
-  const handleDelete = (expense) => {
-    deleteExpense(expense.id);
-    Alert.alert('Info', 'Expense Deleted');
-  };
- 
+  
+  const handleDelete = async (expenseId) => {
+    try { 
+      await firebase.app().database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+      .ref(`/expenses/${expenseId}`)
+      .remove();
+      setExpenses((prevExpenses) =>
+        prevExpenses.filter((expense) => expense.id !== expenseId)
+      );
+      Alert.alert('Info', 'Expense Deleted Successfully!');
+    }catch(error) { 
+      console.error('Error deleting expense: ',error);
+      Alert.alert('Error', 'Failed to delete expense.');
+    };
+  }
+
   const handleEdit = (expense) => {
     navigation.navigate('AddExp', {expense});
   }
+
   const getCurrentDateTime = () => {
     const now = new Date();
   
@@ -84,8 +107,60 @@ const Expenses = ({navigation, route}) => {
   
     return date;
   };
+
+  // useEffect(() => {
+  //   const expensesRef = firebase
+  //   .app()
+  //   .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+  //   .ref('/expenses')
+  //   .orderByChild('userId')
+  //   .equalTo(currentUserId)
+  //   .once('value');
+
+  //   const onValueChange = expensesRef((snapshot) => {
+  //     const data = snapshot.val();
+  //     if (data) {
+  //       const expensesArray = Object.keys(data).map((key) => ({
+  //         id: key, 
+  //         ...data[key],
+  //       }));
+  //       setExpenses(expensesArray); 
+  //     } else {
+  //       setExpenses([]);
+  //     }
+  //   });
   
-          
+  //   return () => expensesRef.off('value', onValueChange); 
+  // }, []);
+  
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const snapshot = await firebase
+          .app()
+          .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+          .ref(`/expenses`)
+          .orderByChild('userId')
+          .equalTo(currentUserId)
+          .once('value');  
+        const data = snapshot.val();
+        if (data) {
+          const expensesArray = Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }));
+          setExpenses(expensesArray);
+        } else {
+          setExpenses([]);
+        }
+      } catch (error) {
+        console.error('Error fetching expenses:', error);
+      }
+    };
+  
+    fetchExpenses(); 
+  }, [currentUserId]);
+     
   return (
   <ScrollView>
     <View style={styles.containerDropdown}>
@@ -121,13 +196,11 @@ const Expenses = ({navigation, route}) => {
               >
               </Dropdown>
     </View>
-    {/* <View style={{height:200,backgroundColor: '#ccc', marginHorizontal:20, marginTop:20}}>
-      <Text>A Pie chart demonstrating expenses via categories</Text>
-      </View> */}
+    
       <View style={styles.showExpenses}>
         <View style={styles.expenseHeader}>
            <Text style={{fontSize:25, fontWeight:'800', marginTop:12}}> {filter ? `${filter} Transactions` : 'All Transactions'} </Text> 
-    <View style={styles.filterContainerDropdown}>
+     <View style={styles.filterContainerDropdown}>
 
            <Dropdown
               style={[styles.filterDropdown, isFocus && {borderColor:'blue'}]}
@@ -162,7 +235,7 @@ const Expenses = ({navigation, route}) => {
               </Dropdown>
               </View>
         </View>
-      </View>
+      </View> 
       <View style={styles.expenseDataContainer}>
       <FlatList
         data={filteredExpenses}
@@ -187,7 +260,7 @@ const Expenses = ({navigation, route}) => {
                   size={20}
                 />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteAlert(item)}>
+              <TouchableOpacity onPress={() => deleteAlert(item.id)}>
                 <Ionicons
                   name="trash-bin"
                   color="red"
@@ -202,21 +275,8 @@ const Expenses = ({navigation, route}) => {
               </Text>
               </View>
             </View>
-            {/* <Text>
-            ListEmptyComponent= {() => {
-               <View style = {styles.emptyContainer}> 
-                  <Ionicons name="receipt-outline" size={48} color="#666"/>
-                  <Text style={styles.emptyText}>No Transactions found</Text>
-                  {filter && (
-                    <Text styles={styles.subText}>No {filter.toLowerCase()} Transactions Available</Text>
-                  )}
-               </View>
-            }}
-            </Text> */}
           </View>
-        )}
-
-        
+        )} 
       ></FlatList>
       
 

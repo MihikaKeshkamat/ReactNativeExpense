@@ -23,16 +23,12 @@ const Layout = () => {
   const [user, setUser] = useState(null);
   const [isAccountSetup, setIsAccountSetup] = useState(false);
 
-  
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
         
         try {
-          // Check if account is setup from AsyncStorage
-          // const accountSetup = await AsyncStorage.getItem('isAccountSetup');
-          // setIsAccountSetup(accountSetup === 'true');
           const [userName, userBalance, accountSetup] = await Promise.all([
             AsyncStorage.getItem('userName'),
             AsyncStorage.getItem('userBalance'),
@@ -58,11 +54,10 @@ const Layout = () => {
       } 
     });
 
-    return unsubscribe; // Cleanup the listener on unmount
-  }, [initializing]);
+    return unsubscribe;
+  }, []);
 
   if (initializing) {
-    // Show a loading indicator while determining authentication state
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -96,7 +91,8 @@ const Layout = () => {
                   headerLeft: null, // Prevent going back
                 }}
               />
-              <Stack.Screen
+               
+               <Stack.Screen
                 name="Tabs"
                 component={Tabs}
                 options={{ headerShown: false }}

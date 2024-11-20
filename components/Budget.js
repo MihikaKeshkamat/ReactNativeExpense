@@ -1,14 +1,12 @@
-import {Text} from "react-native";
-import React from "react";
+import { View, Text } from 'react-native'
+import React from 'react'
 
 const Budget = () => {
-  
   return (
-   <>
-   <Text>Budget</Text>
-   </>
-  );
-};
+    <View>
+      <Text>Budget</Text>
+    </View>
+  )
+}
 
-
-export default Budget;
+export default Budget

@@ -5,19 +5,22 @@ import {useExpenses} from '../components/ExpenseData';
 import {Ionicons} from '@expo/vector-icons';
 import {Dropdown } from 'react-native-element-dropdown';
 import { AntDesign } from '@expo/vector-icons';
-import {ref, serverTimestamp, push,set , off } from '@react-native-firebase/database';
-import database from '@react-native-firebase/database';
+import {serverTimestamp} from '@react-native-firebase/database';
+import auth from '@react-native-firebase/auth';
 import { firebase } from '@react-native-firebase/database';
-
+import {RadioButton} from 'react-native-paper';
 
 const AddExp = ({route, navigation}) => {
+  const currentUserId = auth().currentUser?.uid;
+
+  const [checked,setChecked] = useState('Debit');
     const [amount,setAmount] = useState('');
   const [itemName,setItemName] = useState('');
-  const {addExpenses, updateExpense} = useExpenses();
+  
   const [editingId,setEditingId] = useState(null);
   const [editingExpense, setEditingExpense] = useState(null);
   const[isFocus,setIsFocus] = useState(false);
-  const [credisFocus,setCredisFocus] = useState(false);
+  
   const [selected,setSelected] = useState([]);
   const [amountError, setamountError] = useState('');
   const [itemError, setItemError] = useState('');
@@ -35,24 +38,20 @@ const AddExp = ({route, navigation}) => {
     {label:"Health", value:"Health"},
     {label:"Others", value:"Others"},
   ];
-  const options = [
-    {label:"Debit", value: "Debit"},
-    {label:"Credit", value: "Credit"},
-  ];
-  const {expense} = route.params || {}; 
+  
 
   useEffect(() => {
-    if(expense) {
-      setEditingExpense([expense]);
-      setEditingId(expense.id)
-      setAmount(expense.amount);
-      setItemName(expense.itemName);
-      setCredDebt(expense.credDebt);
+    if(route.params?.expense) {
+      const {id,itemName,amount,checked,category} = route.params.expense;
+      setEditingExpense(id);
+      setAmount(String(amount));
+      setItemName(itemName);
+      setChecked(checked);
+      setSelectedCategory(category);
     } 
-  }, [expense]);
+  }, [route.params?.expense]);
 
-  
-  const handleSave = () => {
+  const handleSaveExpense = async () => {
     if(!amount || String(amount).trim().length === 0) {
       setamountError("Amount is Required");
       return;
@@ -69,35 +68,46 @@ const AddExp = ({route, navigation}) => {
       setcategoryError("Category is required");
       return;
     }
-    if(!credDebt) {
+    if(!checked) {
       setOptionsError("Choose Credit or Debit");
     }
-    if(amount && selected && itemName && credDebt) {
-      if(expense) {
-        updateExpense(expense.id,amount,itemName,selectedCategory,credDebt);
-      }
-      else {
-      addExpenses({
-        amount: amount,
-        category: selectedCategory,
-        itemName: itemName,
-        type:credDebt,
-        // itemName: 'Groceries',
-        // amount:'100',
-        // category:'Food',
-        // type:'debit',
-      date: new Date().toISOString(),
-      });
+    const expense = {
+    
+      itemName,
+      amount: parseFloat(amount),
+      type: checked,
+      category: selectedCategory,
+      userId: currentUserId,
+      createdAt : Date.now(),
+    };
+
+    try{
+      if(editingExpense && typeof editingExpense === 'string') {
+        await firebase
+        .app()
+        .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+        .ref(`/expenses/${editingExpense}`)
+        .update(expense);
+        Alert.alert('Info','Expense updated successfully!');
+      }else { 
+        firebase.app().database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+        .ref(`/expenses`).push(expense);
+        Alert.alert('Success','Expenses added successfully!');
+        
       }
       setAmount('');
       setItemName('');
       setEditingId(null);
       setSelectedCategory(null);
-      setCredDebt(null);
+      setChecked(null);
       navigation.goBack();
+    }catch(error){
+      console.error('Error saving expense: ',error);
+      Alert.alert('Error', 'Failed to save Expense');
     }
-  };
+  }
 
+  
   
   const cancelButton = () => {
     setAmount('');
@@ -108,55 +118,28 @@ const AddExp = ({route, navigation}) => {
       setZeroError('');
       setcategoryError('');
       setSelectedCategory(null);
-      setCredDebt(null);
+      setChecked(null);
+      setOptionsError('');
   }
   
   
 
-  const handleAddData = async() => {
-    try{
-     const response = await firebase.app().
-     database('https://com-anonymous-expensemanager.asia-southeast1.firebasedatabase.app/')
-     .ref('expenses/amount/item/category/type')
-     .set({
-      Amount : amount,
-      ItemName: itemName,
-      category: selectedCategory,
-      type: credDebt,
-     });
-
-     console.log(response);
-    }catch(err) {
-      console.log(err)
-    }
-  }
+  
   
   const getCurrentDateTime = () => {
     const now = new Date();
-    
-    
     const day = String(now.getDate()).padStart(2, '0');
     const month = now.toLocaleString('default', { month: 'short' });
     const year = now.getFullYear();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
-  
-    
     const date = `${day}-${month}-${year}`;
-    
     const time = `${hours}:${minutes}`;
     const dateTime = `${date} ${time}`;
-  
     return dateTime;
   };
-
- 
-  
-  
   const dimensions = useWindowDimensions().width;
-
- 
 
   return (
     <> 
@@ -228,54 +211,27 @@ const AddExp = ({route, navigation}) => {
               </Dropdown>
         {categoryError ? <Text style={{color:'red', textAlign:'center'}}>{categoryError}</Text>: null}
 
-              <Dropdown
-              style={[styles.dropdown, isFocus && {borderColor:'blue'}]}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              inputSearchStyle={styles.inputSearchStyle}
-              iconStyle={styles.iconStyle}
-              search
-              data={options}
-              maxHeight={200}
-              labelField="label"
-              valueField="value"
-              placeholder={!credisFocus? 'Choose' : '...'}
-              searchPlaceholder="Search..."
-              value={credDebt}
-              onFocus={() => setCredisFocus(true)}
-              onBlur={()=> setIsFocus(false)}
-              onChange={item => {
-                setCredDebt(item.value);
-                setIsFocus(false);
-              }}
-              
-              renderLeftIcon={() => (
-                <Ionicons
-          name="checkmark-circle"
-          color="black" 
-          size={20}
-        />
-              )}
-              renderRightIcon={()=>(
-                <AntDesign
-                   style={styles.icon}
-                   color="black"
-                   name="Safety"
-                   size={20}
-                />
-              )}
-
-              selectedStyle={styles.selectedStyle}
-              >
-              </Dropdown>
+              <View style={styles.RadioButton}>  
+                <View style={styles.radioButton}>
+              <RadioButton value="Debit" 
+              status={checked === "Debit" ? 'checked' : 'unchecked'}
+              onPress={() => setChecked('Debit')}/>
+              <Text style={styles.radioButtonLabel}>Debit</Text>
+              </View>
+              <View style={styles.radioButton}>
+              <RadioButton value="Credit" 
+              status={checked === "Credit" ? 'checked' : 'unchecked'}
+              onPress={() => setChecked('Credit')}/>
+              <Text style={styles.radioButtonLabel}>Credit</Text>
         {optionsError ? <Text style={{color:'red', textAlign:'center'}}>{optionsError}</Text>: null}
-              
+        </View>
+              </View>              
              </View>
 
 
              <View style={styles.buttons}>
 
-<TouchableOpacity onPress={handleSave} >
+<TouchableOpacity onPress={handleSaveExpense} >
 <View style={styles.largeButton}>
 <Text style={styles.buttonText}>{editingExpense ? 'Update' : 'Save'}</Text>
 </View>
@@ -286,38 +242,34 @@ const AddExp = ({route, navigation}) => {
 <Text style={styles.buttonText}>Cancel</Text>
 </View>
 </TouchableOpacity>
-</View>
-    
+</View>          
              <View style={styles.expenseDataContainer}>
-        <FlatList
-            data={editingExpense}
-           keyExtractor = {(item) => item.id}
-            
-            renderItem={({item}) => (
               <View style={styles.expenseItem}>
             <View style={styles.expenseDetails}>
-              <Text style={styles.categoryText}>{item.category}</Text>
-              <Text style={styles.itemText}>{item.itemName}</Text>
+              <Text style={styles.categoryText}>{selectedCategory}</Text>
+              <Text style={styles.itemText}>{itemName}</Text>
             </View>
 
             <View style={styles.amountContainer}>
-              <Text style={styles.amountText}>${item.amount}</Text>
+              <Text style={styles.amountText}>${amount}</Text>
             </View>
             
               <View style={styles.dateContainer}>
+              <Text style={[styles.debit,{color: credDebt === 'Credit'? '#00A65A' : '#FD3C4A'}]}>{credDebt}</Text>
+
               <Text style={styles.dateText}>
                 {getCurrentDateTime()}
               </Text>
               </View>
             </View>
           
-            )}
-        >
-        </FlatList>
+          
+      
+        
     
       </View> 
       
-      {/* <View style={{height:100}}></View>  */}
+      <View style={{height:100}}></View> 
     </ScrollView>
     
     </>
@@ -446,13 +398,14 @@ const styles = StyleSheet.create({
     fontWeight:'500',
     color:'red',
   },
-  
-  dateContainer:{
-    marginRight:7,
-    marginBottom:8,
-  },
   dateText:{
-    marginTop:50,
+    marginTop:10,
+    marginRight:20,
+  },
+  debit:{
+    textAlign:'center',
+    fontSize:18,
+    marginTop:20,
   },
   category: {
       marginHorizontal:30,
@@ -499,7 +452,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontWeight:'500',
   },
-  
+  RadioButton:{
+    flexDirection:'column',
+    borderWidth: 1,
+    borderRadius:20,
+    marginTop:10,
+  },
+  radioButton:{
+     flexDirection: 'row',
+     gap:10,
+  },
+  radioButtonLabel:{
+    fontSize:16,
+    marginTop:5
+  }
 })
 
 export default AddExp

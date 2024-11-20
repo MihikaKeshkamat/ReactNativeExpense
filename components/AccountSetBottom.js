@@ -68,109 +68,6 @@ const AccountSetBottom = () => {
       console.log(name);
     }catch(e) {console.log('Error saving name: ',e)}
   };
-  // const handleLogin = () => {
-  //   if (bottomSheetModalRef?.current) {
-  //     bottomSheetModalRef.current.close();
-  //   }
-  //   navigation.navigate('HomeScreen');
-  // };
-
-  // const handleLogin = () => {
-  //   bottomSheetModalRef.current?.close();
-  //   navigation.reset({
-  //     index: 0,
-  //     routes: [{ name: 'Tabs' }],
-  //   });
-  // };
-  // const handleLogin = async () => {
-  //   try {
-  //     await AsyncStorage.setItem('token', 'user_logged_in');
-  //     setIsLoggedIn(true); // This will automatically trigger the switch to MainNavigator
-  //     navigation.replace('Tabs')
-  //   } catch (error) {
-  //     console.error('Error during login:', error);
-  //   }
-  // };
-  
-  
-  
-  // const nameRequired = () => { 
-  //   if (name && String(name).length > 0) {
-  //     setNameError(null); 
-  //     saveName();
-  //   } else {
-  //     setNameError("Name is required"); 
-  //   }
-  // };
-  
-
-  // const handleContinue = () => {
-  //   if (name && String(name).length > 0) {
-  //     setNameError(null); 
-  //     setBalanceError(null);
-  //     handleLogin();
-  //     saveName(); 
-  //     saveBalance();
-  //     console.log(navigation.getState());
-
-  //   } else {
-  //     nameRequired(); 
-  //     balanceRequired();
-  //   }
-  // };
-  // const handleContinue = async () => {
-  //   if (name && String(name).length > 0) {
-  //     // Clear any previous errors
-  //     setNameError(null); 
-  //     setBalanceError(null);
-  
-  //     // Save name and balance to AsyncStorage or perform any necessary operations
-  //     await saveName();
-  //     await saveBalance();
-  
-  //     // Log the current navigation state (optional for debugging)
-  //     console.log('Current Navigation State:', navigation.getState());
-  
-  //     // Close the bottom sheet if it exists and navigate to Tabs
-  //     handleLogin();
-  //   } else {
-  //     // Trigger error messages if validation fails
-  //     nameRequired(); 
-  //     balanceRequired();
-  //   }
-  // };
-
-  // const handleContinue = async () => {
-  //   if (name && String(name).length > 0) {
-  //     try {
-  //       setNameError(null);
-  //       await AsyncStorage.setItem('token', 'user_logged_in'); // Save login state
-  //       navigation.navigate('TabsNav');
-  //     } catch (error) {
-  //       console.error('Error saving login state:', error);
-  //     }
-  //   } else {
-  //     nameRequired();
-  //     balanceRequired();
-  //   }
-  // };
-  
-  // const handleContinue = async () => {
-  //   if (name && String(name).length > 0) {
-  //     try {
-  //       await AsyncStorage.setItem('token', 'user_logged_in'); // Save login state
-  //       navigation.reset({
-  //         index: 0,
-  //         routes: [{ name: 'Tabs' }], // Reset to MainNavigator's Tabs
-  //       });
-  //     } catch (error) {
-  //       console.error('Error saving login state:', error);
-  //     }
-  //   } else {
-  //     nameRequired();
-  //     balanceRequired();
-  //   }
-  // };
   
   
   
@@ -181,72 +78,25 @@ const AccountSetBottom = () => {
       console.log(balance);
     }catch(e) {console.log('Error saving balance: ',e)}
   };
-  // const balanceRequired = () => {
-  //   if (balance && balance > 0) {
-  //     setBalanceError(null);
-  //     handleLogin();
-  //     // saveBalance();
-  //   } else {
-  //     setBalanceError("Balance is required");
-  //   }
-  // };
-  // const saveName = async () => {
-  //   try {
-  //     await AsyncStorage.setItem('userName', name);
-  //   } catch (error) {
-  //     console.error('Error saving name:', error);
-  //   }
-  // };
-
-  // const saveBalance = async () => {
-  //   try {
-  //     await AsyncStorage.setItem('userBalance', balance.toString());
-  //   } catch (error) {
-  //     console.error('Error saving balance:', error);
-  //   }
-  // };
-  const handleAccountSetup = async () => {
-    try {
-      const user = auth().currentUser;
-
-      if (user) {
-        // Example: Save setup completion flag in the user's profile
-        await user.updateProfile({
-          displayName: name,
-          balance: balance,
-        });
-
-        Alert.alert('Account Setup Complete', 'You can now use the app!');
-      }
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
-  };
+  
+  
 
   const handleLogin = async () => {
     try {
+      saveBalance();
+      saveName();
       await Promise.all([
-        AsyncStorage.setItem('token', 'user_logged_in'),
-        saveName(),
-        saveBalance()
+        AsyncStorage.setItem('userName', name),
+        AsyncStorage.setItem('userBalance', balance.toString()),
+        AsyncStorage.setItem('isAccountSetup', 'true')
+        
       ]);
-      const user = auth().currentUser;
-      if (user) {
-        await user.updateProfile({
-          ...user.providerData[0],
-          isAccountSetup: true
-        });
-      }
-
       // Navigate to Tabs
       setIsLoggedIn(true);
       navigation.reset({
         index: 0,
         routes: [{ name: 'Tabs' }]
       });
-
-      
-      // navigation.navigate('Tabs');
     } catch (error) {
       console.error('Error during login:', error);
     }
