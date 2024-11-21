@@ -16,6 +16,7 @@ import AccountSetBottom from '../components/AccountSetBottom';
 import auth from '@react-native-firebase/auth'; // Adjust the path if necessary
 import firestore from '@react-native-firebase/firestore';
 
+
 import { View, ActivityIndicator } from 'react-native';
 const Stack = createStackNavigator();
 const Layout = () => {

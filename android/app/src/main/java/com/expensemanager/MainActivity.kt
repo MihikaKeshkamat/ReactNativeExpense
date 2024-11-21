@@ -1,4 +1,4 @@
-package com.galaxies.ExpenseManager
+package com.expensemanager
 
 import android.os.Build
 import android.os.Bundle

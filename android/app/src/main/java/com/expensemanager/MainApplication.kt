@@ -1,8 +1,9 @@
-package com.galaxies.ExpenseManager
+package com.expensemanager
 
 import android.app.Application
 import android.content.res.Configuration
-
+import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
+import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeHost
@@ -22,7 +23,9 @@ class MainApplication : Application(), ReactApplication {
         object : DefaultReactNativeHost(this) {
           override fun getPackages(): List<ReactPackage> {
             // Packages that cannot be autolinked yet can be added manually here, for example:
-            // packages.add(new MyReactNativePackage());
+            packages.add(new MyReactNativePackage());
+             packages.add(new RNFirebaseMessagingPackage());
+         packages.add(new RNFirebaseNotificationsPackage());
             return PackageList(this).packages
           }
 
