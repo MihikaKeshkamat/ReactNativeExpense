@@ -4,19 +4,16 @@ import {BottomSheetModalProvider,BottomSheetView,BottomSheetModal, BottomSheetBa
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {FirebaseError} from '@react-native-firebase/app'
-// import auth from '@react-native-firebase/auth';
-// import { auth } from '../components/firebase'; // Adjust the path if necessary
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BottomScreen = ({navigation}) => {
+const BottomScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [name,setName] = useState('');
   const [token,setToken] = useState('')
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
   const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(()=>['90%' ],[])
   const [loading,setLoading] = useState(false);
@@ -31,144 +28,30 @@ const BottomScreen = ({navigation}) => {
     (props) => (<BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} opacity={0.5} pressBehaviour="close"/>
   ),[]);
   
-  // useEffect(() => {
-  //   const checkToken = async () => {
-  //     try {
-  //       const savedToken = await AsyncStorage.getItem('token');
-  //       if (savedToken) {
-  //         setToken(savedToken);
-  //         navigation.navigate('AccountSetup');
-  //       }
-  //     } catch (e) {
-  //       console.error('Failed to fetch the token', e);
-  //     }
-  //   };
-  //   checkToken();
-  // }, [navigation]);
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-
-  // const handleAuth = () => {
-  //   if (isSignUp) {
-  //     createUserWithEmailAndPassword(auth, email, password)
-  //       .then((userCredential) => {
-  //         setUser(userCredential.user);
-  //       })
-  //       .catch((error) => {
-  //         console.error(error);
-  //       });
-  //   } else {
-  //     signInWithEmailAndPassword(auth, email, password)
-  //       .then((userCredential) => {
-  //         setUser(userCredential.user);
-  //       })
-  //       .catch((error) => {
-  //         console.error(error);
-  //       });
-  //   }
-  // };
-
-  // const handleSignOut = () => {
-  //   signOut(auth).then(() => setUser(null));
-  // };
-
-  //firebase auth signUp
-  // const signUp = () => {
-  //   if (!email || !password) {
-  //     Alert.alert('Error', 'Please fill in all fields');
-  //     return;
-  //   }
-  //    setLoading(true);
-  //    try{
-  //     auth().
-  //     createUserWithEmailAndPassword(email,password)
-  //     .then(() => console.log("User signed up"));
-      
-  //    }catch(e){
-  //     console.log(FirebaseError); 
-  //     alert('Registration failed: ' + FirebaseError)
-  //    }finally{
-  //     setLoading(false);
-  //    }
-  // }
-  // //firebase auth signIn
-  // const signIn = () => {
-  //   if (!email || !password) {
-  //     Alert.alert('Error', 'Please fill in all fields');
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   try{
-  //     auth()
-  //     .signInWithEmailAndPassword(email,password)
-  //     .then(() => {
-  //       console.log('User Signed In');
-  //     })
-  //   }catch(FirebaseError){
-  //     console.log(FirebaseError);
-  //     alert('Sign In Error: ' +FirebaseError);
-  //   }
-  //   finally{
-  //     setLoading(false);
-  //   }
-  // }
-
-  // const handleLogin = async () => {
-  //   if (!isValidEmail(email)) {
-  //     // Alert.alert('Invalid email', 'Please enter a valid email address.');
-  //     // return;
-  //     Alert.alert('Invalid Email', 'Please enter a valid email address');
-  //     return;
-  //   }
-  //   console.log('Email:', email);
-  //   console.log('Password:', password);
-
-  //   try {
-  //     setToken('abc123');
-  //     await AsyncStorage.setItem('username', email);
-  //     await AsyncStorage.setItem('token', 'abc123');
-  //     await AsyncStorage.setItem('name',name);
-  //   } catch (err) {
-  //     console.error('Error saving data:', err);
-  //   }
-
-  //   bottomSheetModalRef.current?.close();
-  //   navigation.navigate('AccountSetup');
-  // };
-  // getData = async() => {
-  //   try{
-  //     const value = await AsyncStorage.getItem('token')
-  //     const username = await AsyncStorage.getItem('username')
-  //     if(value!==null){
-  //        setToken({token: value})
-  //     }
-  //     if(value!==null){
-  //       setToken({username})
-  //    }
-  //   } catch(e){
-  //     console.log(e)
-  //   }
-  // }
   
 
-  const handleAuth = async ({navigation}) => {
+  const handleAuth = async () => {
     try {
       if (isSignUp) {
-        // Sign-Up Logic
         await auth().createUserWithEmailAndPassword(email, password);
+        // await AsyncStorage.setItem('isFirstLogin', 'false');
         Alert.alert('Sign-Up Successful', 'You can now log in.');
+        navigation.replace('AccountSetup'); 
+
       } else {
-        // Sign-In Logic
+        
         await auth().signInWithEmailAndPassword(email, password);
         Alert.alert('Login Successful');
-        navigation.replace('AccountSetup'); // Navigate to Layout
+        navigation.replace('Tabs'); 
       }
     } catch (error) {
-      Alert.alert('Authentication Error', error.message);
+      console.error('Authentication Error', error.message);
     }
   };
   return (

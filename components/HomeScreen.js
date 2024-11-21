@@ -1,40 +1,88 @@
-import { View, Text, StyleSheet,TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet,TouchableOpacity,ActivityIndicator } from 'react-native'
 import React,  {useEffect, useState} from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useExpenses} from './ExpenseData'
 import { useNavigation } from '@react-navigation/native'
-const HomeScreen = ({transactions}) => {
+const HomeScreen = () => {
+
   const [name,setName] = useState('');
   const [balance,setBalance] = useState('');
   const [totalExpenses, setTotalExpenses] = useState('0');
   const [totalIncome,setTotalIncome] = useState(0);
   const {expenses} = useExpenses();
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
+
   const getDate = () => {
     const today = new Date();
     const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(today);
     const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
     return capitalizedMonth;
   };
+  // useEffect(() => {
+  //   const getName = async () => {
+  //     try {
+  //       const storedName =await AsyncStorage.getItem('name');
+  //       const storedBalance =await AsyncStorage.getItem('balance');
+  //       console.log('Retrieved Name:', storedName); // Debug
+  //       console.log('Retrieved Balance:', storedBalance); // Debug
+  //       if (storedName && storedBalance) {
+  //         setName(storedName);
+  //         setBalance(storedBalance);
+  //       } else {
+  //         navigation.replace('AccountSetup');
+  //       }
+  //     }catch(error) {
+  //       console.log('Error retrieving name: ', error);
+  //     }
+  //   };
+  //   getName();
+  // },[]);
+
   useEffect(() => {
-    const getName = async () => {
+    // Check AsyncStorage for account data on component mount
+    const getAccountInfo = async () => {
       try {
-        const storedName = await AsyncStorage.getItem('name');
-        const storedBalance = await AsyncStorage.getItem('balance');
-        
-        if(storedName) {
-          setName(storedName);
-        } 
-        if(storedBalance) {
-          setBalance(storedBalance)
+        const isAccountSetup = await AsyncStorage.getItem('isAccountSetup');
+        if (isAccountSetup === 'true') {
+          // Account setup is complete, fetch name and balance
+          const storedName = await AsyncStorage.getItem('name');
+          const storedBalance = await AsyncStorage.getItem('balance');
+
+          if (storedName && storedBalance) {
+            setName(storedName);
+            setBalance(storedBalance);
+          } else {
+            // If name or balance is missing, go back to setup screen
+            navigation.replace('AccountSetup');
+          }
+        } else {
+          // If account is not set up, navigate to account setup
+          navigation.replace('AccountSetup');
         }
-      }catch(error) {
-        console.log('Error retrieving name: ', error);
-      }
+      } catch (error) {
+        console.error('Error retrieving account info:', error);
+      } 
     };
-    getName();
-  },[]);
+
+    getAccountInfo();
+  }, []);
+  // useEffect(() => {
+  //   if (route.params?.name && route.params?.balance) {
+  //     setName(route.params.name);
+  //     setBalance(route.params.balance);
+  //   } else {
+  //     // Fallback to fetch from AsyncStorage if params are not passed
+  //     const fetchData = async () => {
+  //       const storedName = await AsyncStorage.getItem('name');
+  //       const storedBalance = await AsyncStorage.getItem('balance');
+  //       setName(storedName || '');
+  //       setBalance(storedBalance || '0');
+  //     };
+  //     fetchData();
+  //   }
+  // }, [route.params]);
   useEffect(()=>{
     console.log('Current Expenses', expenses);
   },[expenses]);
@@ -60,13 +108,17 @@ const HomeScreen = ({transactions}) => {
       });
 
       console.log('Calculated totals:', { incomeTotal, expensesTotal }); // Debug log
-      
+     
       setTotalIncome(incomeTotal);
       setTotalExpenses(expensesTotal);
+      
+      
     } catch (error) {
       console.error('Error calculating totals:', error);
     }
   };
+ 
+  
   const handleIncomePress = () => {
     console.log('Income tile pressed');
     navigation.navigate('Expenses', { filter: 'Credit' });
@@ -135,7 +187,7 @@ const HomeScreen = ({transactions}) => {
         </View>
     </View>
     </View>
-   
+
     </>
 
   )
@@ -244,6 +296,14 @@ const styles = StyleSheet.create({
     fontWeight:"400",
     marginTop:2,
   },
+  accountDiv: { 
+    borderWidth:1,
+    borderRadius: 40,
+    width:'90%',
+    height:'90',
+    marginHorizontal:20,
+    merginVertical:20,
+  }
 });
 
 export default HomeScreen

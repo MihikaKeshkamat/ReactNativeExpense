@@ -4,10 +4,10 @@ import {BottomSheetModalProvider,BottomSheetView,BottomSheetModal, BottomSheetBa
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Dropdown } from 'react-native-element-dropdown';
 import { AntDesign } from '@expo/vector-icons';
-import Home from '../components/HomeScreen';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import auth from '@react-native-firebase/auth'
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore'
 
 const Account = [
     {label: "Checking Account", value:'1'},
@@ -38,6 +38,11 @@ const Bank = [
     {label: 'Other', value:'17'},
 ]
 const AccountSetBottom = () => {
+  // const user= route?.params?.user || {
+  //   uid: null,
+  //   email: '',
+  // };
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [balance,setBalance] = useState('');
@@ -50,6 +55,7 @@ const AccountSetBottom = () => {
   const [nameError,setNameError] = useState(null);
     const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(()=>['95%' ],[])
+
   // callbacks
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
@@ -64,43 +70,116 @@ const AccountSetBottom = () => {
   const saveName = async() => {
     try {
       await AsyncStorage.setItem('name', name);
-      console.log("Name saved successfully");
+      console.log("Name saved successfully", name);
       console.log(name);
     }catch(e) {console.log('Error saving name: ',e)}
   };
-  
-  
-  
+
   const saveBalance = async() => {
     try {
       await AsyncStorage.setItem('balance', balance);
-      console.log("Balance saved successfully");
+      console.log("Balance saved successfully", balance);
       console.log(balance);
     }catch(e) {console.log('Error saving balance: ',e)}
   };
   
-  
+  // const handleLogin = async () => {
+  //   try {
+  //     // saveBalance();
+  //     // saveName();
+  //     await Promise.all([
+  //       AsyncStorage.setItem('name', name),
+  //       AsyncStorage.setItem('balance', balance.toString()),
+  //       AsyncStorage.setItem('isFirstLogin', 'false')
+        
+  //     ]);
+  //     // setIsLoggedIn(true);
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{ name: 'Tabs' }]
+  //     });
+  //   } catch (error) {
+  //     console.error('Error during login:', error);
+  //   }
+  // };
+
+  // const handleLogin = async () => {
+  //   try { 
+  //      saveBalance();
+  //      saveName();
+  //     // await AsyncStorage.setItem(`isFirstLogin_${currentUser.uid}`, 'true');
+  //     // navigation.replace('Tabs');
+  //     await firestore()
+  //       .collection('users')
+  //       .doc(user.uid)
+  //       .set({
+  //         name: name,
+  //         balance: parseFloat(balance),
+  //         createdAt: firestore.FieldValue.serverTimestamp(),
+  //         email: user.email
+  //       });
+
+  //     // Save some details to AsyncStorage if needed
+  //     await AsyncStorage.setItem('userName', name);
+  //     await AsyncStorage.setItem('userBalance', balance);
+
+  //     // Navigate to main app
+  //     navigation.replace('Tabs');
+  //   }catch(error){
+  //     console.error('Account Setup error', error);
+  //   }
+  // }
+  // const handleLogin = async () => {
+  //   try {
+  //     saveBalance();
+  //     saveName();
+  //     await Promise.all([
+  //       AsyncStorage.setItem('name', name),
+  //       AsyncStorage.setItem('balance', balance.toString()),
+  //       AsyncStorage.setItem('isAccountSetup', 'true'),
+  //     //   AsyncStorage.setItem('isAccountSetup', 'true')
+        
+  //     ]);
+     
+  //     // Navigate to Tabs
+  //     // setIsLoggedIn(true);
+  //     // navigation.reset({
+  //     //   index: 0,
+  //     //   routes: [{ name: 'Tabs' }]
+  //     // });
+  //     navigation.replace('Tabs', {
+  //       setName : saveName(), 
+  //       setBalance: saveBalance(),
+  //     });
+  //   } catch (error) {
+  //     console.error('Error during login:', error);
+  //   }
+  // };
 
   const handleLogin = async () => {
     try {
-      saveBalance();
-      saveName();
-      await Promise.all([
-        AsyncStorage.setItem('userName', name),
-        AsyncStorage.setItem('userBalance', balance.toString()),
-        AsyncStorage.setItem('isAccountSetup', 'true')
-        
-      ]);
+      // const storedName = await AsyncStorage.getItem('name');
+      // const storedBalance = await AsyncStorage.getItem('balance');
+  
+      // // Save only if name and balance are not already saved
+      // if (!storedName || !storedBalance) {
+        await AsyncStorage.setItem('name', name);
+        await AsyncStorage.setItem('balance', balance.toString());
+      await AsyncStorage.setItem('isAccountSetup', 'true');
+
+        console.log('New name and balance saved:', name, balance);
+      // } else {
+      //   console.log('Existing name and balance:', storedName, storedBalance);
+      // }
+  
+  
       // Navigate to Tabs
-      setIsLoggedIn(true);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Tabs' }]
-      });
+      navigation.replace('Tabs');
     } catch (error) {
       console.error('Error during login:', error);
     }
   };
+  
 
   const nameRequired = () => {
     if (name && String(name).trim().length > 0) {
@@ -127,7 +206,8 @@ const AccountSetBottom = () => {
     const isBalanceValid = balanceRequired();
 
     if (isNameValid && isBalanceValid) {
-     
+      saveBalance();
+      saveName();
           await handleLogin();
         } 
   };

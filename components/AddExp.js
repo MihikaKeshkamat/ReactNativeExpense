@@ -86,12 +86,12 @@ const AddExp = ({route, navigation}) => {
         await firebase
         .app()
         .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-        .ref(`/expenses/${editingExpense}`)
+        .ref(`/${currentUserId}/expenses/${editingExpense}`)
         .update(expense);
         Alert.alert('Info','Expense updated successfully!');
       }else { 
         firebase.app().database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-        .ref(`/expenses`).push(expense);
+        .ref(`/${currentUserId}/expenses`).push(expense);
         Alert.alert('Success','Expenses added successfully!');
         
       }

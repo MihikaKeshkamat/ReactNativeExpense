@@ -80,7 +80,7 @@ useEffect(() => {
   const handleDelete = async (expenseId) => {
     try { 
       await firebase.app().database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-      .ref(`/expenses/${expenseId}`)
+      .ref(`/${currentUserId}/expenses/${expenseId}`)
       .remove();
       setExpenses((prevExpenses) =>
         prevExpenses.filter((expense) => expense.id !== expenseId)
@@ -108,42 +108,23 @@ useEffect(() => {
     return date;
   };
 
-  // useEffect(() => {
-  //   const expensesRef = firebase
-  //   .app()
-  //   .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-  //   .ref('/expenses')
-  //   .orderByChild('userId')
-  //   .equalTo(currentUserId)
-  //   .once('value');
 
-  //   const onValueChange = expensesRef((snapshot) => {
-  //     const data = snapshot.val();
-  //     if (data) {
-  //       const expensesArray = Object.keys(data).map((key) => ({
-  //         id: key, 
-  //         ...data[key],
-  //       }));
-  //       setExpenses(expensesArray); 
-  //     } else {
-  //       setExpenses([]);
-  //     }
-  //   });
-  
-  //   return () => expensesRef.off('value', onValueChange); 
-  // }, []);
-  
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
+        if (!currentUserId) {
+          console.error('No current user ID available.');
+          return;
+        }
+  
         const snapshot = await firebase
           .app()
           .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-          .ref(`/expenses`)
-          .orderByChild('userId')
-          .equalTo(currentUserId)
-          .once('value');  
+          .ref(`/${currentUserId}/expenses`)
+          .once('value');
+  
         const data = snapshot.val();
+  
         if (data) {
           const expensesArray = Object.keys(data).map((key) => ({
             id: key,
@@ -158,8 +139,9 @@ useEffect(() => {
       }
     };
   
-    fetchExpenses(); 
+    fetchExpenses();
   }, [currentUserId]);
+  
      
   return (
   <ScrollView>
