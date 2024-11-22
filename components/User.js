@@ -2,7 +2,8 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput,Alert } from 'react
 import React, {useState, useEffect} from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-
+import {app} from '../firebaseConfig';
+import {getAuth, signOut} from 'firebase/auth'
 const User = ({navigation}) => {
   const [name,setName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -32,6 +33,34 @@ const User = ({navigation}) => {
       Alert.alert('Error', 'Failed to Update Name');
     }
  }
+
+ const handleLogout = () => {
+  const auth = getAuth();
+  Alert.alert(
+    'Confirm Logout','Are you sure you want to log out?',
+    [
+      {
+        text : 'Cancel',
+        style: 'cancel'
+      },
+      {
+        text: 'OK',
+        onPress: () => {
+          auth.signOut().then(()=>{
+            Alert.alert('Logged Out','You have been logged out!');
+            navigation.replace('SplashScreen');
+          })
+          .catch((error)=>{
+            console.error('Logout Error: ',error);
+            Alert.alert('Error','Failed to log out. Please try again');
+          })
+        }
+      }
+    ],
+    {cancelable : true}
+  );
+  };
+ 
   return (
     <>
     <View style={styles.header}>
@@ -72,8 +101,15 @@ const User = ({navigation}) => {
   </View>
   <View style={styles.logoutContainer}>
     <Ionicons 
+    name="log-out-outline"
+    color='purple'
+    size={30}
+    style={styles.logoutIcon}
     />
-    <Text>Logout</Text>
+    <Text style={{fontSize:22,fontWeight:'500',marginTop:8,marginLeft:-120}}>Logout</Text>
+    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      <Text style={styles.logoutButtonText}>Click Me</Text>
+    </TouchableOpacity>
 
   </View>
     </>
@@ -110,6 +146,32 @@ const styles=StyleSheet.create({
   },
   editButton: {
     marginLeft:100
+  },
+  logoutContainer:{
+    borderWidth:1,
+    borderRadius:20,
+    marginHorizontal:20,
+    marginVertical:10,
+    width:'90%',
+    flexDirection:'row',
+    height:50,
+    justifyContent:'space-between',
+  },
+  logoutIcon:{
+    marginTop:10,
+    marginLeft:10
+  },
+  logoutButton:{
+    borderWidth:1,
+    backgroundColor:'#25D0BC',
+    marginTop:7,
+    borderRadius:20,
+    height:30,
+    marginRight:10
+  },
+  logoutButtonText:{
+    paddingHorizontal:5,
+    marginTop:3
   }
 }
 )

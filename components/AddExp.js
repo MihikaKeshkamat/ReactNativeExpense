@@ -9,9 +9,15 @@ import {serverTimestamp} from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
 import { firebase } from '@react-native-firebase/database';
 import {RadioButton} from 'react-native-paper';
+import { getAuth} from "firebase/auth";
 
+import {app} from '../firebaseConfig';
+// import {auth} from '../firebaseConfig';
+import { database } from '../firebaseConfig';
+import { ref, set, update, push, getDatabase } from 'firebase/database';
 const AddExp = ({route, navigation}) => {
-  const currentUserId = auth().currentUser?.uid;
+  const auth = getAuth();
+  const currentUserId = auth.currentUser?.uid;
 
   const [checked,setChecked] = useState('Debit');
     const [amount,setAmount] = useState('');
@@ -82,16 +88,19 @@ const AddExp = ({route, navigation}) => {
     };
 
     try{
+      const db = getDatabase();
       if(editingExpense && typeof editingExpense === 'string') {
-        await firebase
-        .app()
-        .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-        .ref(`/${currentUserId}/expenses/${editingExpense}`)
-        .update(expense);
+        // await firebase
+        // .app()
+        // .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+        // .ref(`/${currentUserId}/expenses/${editingExpense}`)
+        // .update(expense);
+        await update(ref(db, `/${currentUserId}/expenses/${editingExpense}`), expense);
         Alert.alert('Info','Expense updated successfully!');
       }else { 
-        firebase.app().database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-        .ref(`/${currentUserId}/expenses`).push(expense);
+        // firebase.app().database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+        // .ref(`/${currentUserId}/expenses`).push(expense);
+        await push(ref(db, `/${currentUserId}/expenses`), expense);
         Alert.alert('Success','Expenses added successfully!');
         
       }
@@ -147,6 +156,7 @@ const AddExp = ({route, navigation}) => {
     <ScrollView>
 
     <View style={{flex:1,height:100}}></View>
+    <View style={{height:200,width:'auto'}}>
     <View style={styles.amount}>
        <Text style={{fontSize:20, fontWeight:'400'}} >Record Transaction</Text>
        <TextInput  placeholder='$               ' value={amount}   onChangeText={(numeric)=> setAmount(numeric)} style={styles.amountPlaceholder}/>
@@ -165,7 +175,7 @@ const AddExp = ({route, navigation}) => {
     </View> 
         {itemError ? <Text style={{color:'red', textAlign:'center'}}>{itemError}</Text>: null}
 
-    
+        </View>
 
       <View style={styles.category}>
          
@@ -279,7 +289,7 @@ const AddExp = ({route, navigation}) => {
 
 const styles = StyleSheet.create({
   amount: {
-      width:'20',
+      width:'auto',
       height:'90',
       borderRadius:40,
       backgroundColor: '#B2C9AB',
@@ -291,7 +301,6 @@ const styles = StyleSheet.create({
       marginRight:20,
       paddingVertical:10,
       marginTop:10,
-
   },
   amountPlaceholder:{
     marginTop:10,
@@ -299,9 +308,11 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     marginBottom:10,
     paddingHorizontal:10,
-    marginLeft:10,
+    // marginLeft:10,
     textDecorationLine:'underline',
-    color:'#DAE7DC'
+    color:'#DAE7DC',
+    justifyContent:'center',
+    alignItems:'center'
   },
   amountBottom: {
     flexDirection: 'row',

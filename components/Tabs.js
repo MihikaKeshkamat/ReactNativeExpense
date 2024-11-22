@@ -89,6 +89,7 @@ const Tabs = () => {
         }}
         ></Tab.Screen>
         <Tab.Screen name="Add" component={ExpenseStackNavigator}
+        tabBarShowLabel='false'
         options={{
             headerShown: false,
             tabBarIcon: ({focused}) => {

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useExpenses} from './ExpenseData'
 import { useNavigation } from '@react-navigation/native'
+import {app, auth, database} from '../firebaseConfig';
 
 const HomeScreen = ({route}) => {
   const [name,setName] = useState('');
@@ -20,25 +21,7 @@ const HomeScreen = ({route}) => {
     const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
     return capitalizedMonth;
   };
-  // useEffect(() => {
-  //   const getName = async () => {
-  //     try {
-  //       const storedName =await AsyncStorage.getItem('name');
-  //       const storedBalance =await AsyncStorage.getItem('balance');
-  //       console.log('Retrieved Name:', storedName); // Debug
-  //       console.log('Retrieved Balance:', storedBalance); // Debug
-  //       if (storedName && storedBalance) {
-  //         setName(storedName);
-  //         setBalance(storedBalance);
-  //       } else {
-  //         navigation.replace('AccountSetup');
-  //       }
-  //     }catch(error) {
-  //       console.log('Error retrieving name: ', error);
-  //     }
-  //   };
-  //   getName();
-  // },[]);
+  
 
   useEffect(() => {
     const getAccountInfo = async () => {
@@ -71,21 +54,7 @@ const HomeScreen = ({route}) => {
       setName(route.params.updatedName);
     }
   },[route.params?.updatedName]);
-  // useEffect(() => {
-  //   if (route.params?.name && route.params?.balance) {
-  //     setName(route.params.name);
-  //     setBalance(route.params.balance);
-  //   } else {
-  //     // Fallback to fetch from AsyncStorage if params are not passed
-  //     const fetchData = async () => {
-  //       const storedName = await AsyncStorage.getItem('name');
-  //       const storedBalance = await AsyncStorage.getItem('balance');
-  //       setName(storedName || '');
-  //       setBalance(storedBalance || '0');
-  //     };
-  //     fetchData();
-  //   }
-  // }, [route.params]);
+  
   useEffect(()=>{
     console.log('Current Expenses', expenses);
   },[expenses]);
@@ -120,7 +89,7 @@ const HomeScreen = ({route}) => {
       console.error('Error calculating totals:', error);
     }
   };
- 
+  
   
   const handleIncomePress = () => {
     console.log('Income tile pressed');
@@ -148,9 +117,11 @@ const HomeScreen = ({route}) => {
   
   <Text style={styles.date}>{getDate()}</Text>
   </View>
+  <View style={styles.accountContainer}>
     <View style={styles.accountBalance}>
       <Text style={styles.accountText}>Account Balance</Text>
       <Text style={styles.accountAmount}>$ {balance}</Text>
+    </View>
     </View>
     <View style={styles.incomeExp}>
     <View style={styles.incomeContainer}>
@@ -199,15 +170,18 @@ const HomeScreen = ({route}) => {
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', 
-    justifyContent: 'space-between', 
+    justifyContent: 'space-evenly', 
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     marginBottom: 0,
+    // justifyContent:'center'
   },
   leftContainer: {
     flexDirection: 'row', 
     alignItems: 'center',
+    marginLeft:-30,
+    
   },
   profile: {
     marginRight: 8, 
@@ -221,12 +195,16 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: '800',
   },
+  accountContainer:{
+    justifyContent:'center',
+    alignItems:'center'
+  },
   accountBalance:{
     flexDirection:'column',
     justifyContent:'center',
     alignItems:'center',
    backgroundColor: 'ccc',
-   left:100, 
+  //  left:100, 
    width:180,
    height:80, 
    borderRadius: 25,

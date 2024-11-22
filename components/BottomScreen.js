@@ -4,8 +4,10 @@ import {BottomSheetModalProvider,BottomSheetView,BottomSheetModal, BottomSheetBa
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
-import auth from '@react-native-firebase/auth';
+import auth from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {app} from '../firebaseConfig';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
 const BottomScreen = () => {
   const [email, setEmail] = useState('');
@@ -37,16 +39,17 @@ const BottomScreen = () => {
   
 
   const handleAuth = async () => {
+    const auth = getAuth();
     try {
       if (isSignUp) {
-        await auth().createUserWithEmailAndPassword(email, password);
+        await createUserWithEmailAndPassword(auth,email, password);
         // await AsyncStorage.setItem('isFirstLogin', 'false');
         Alert.alert('Sign-Up Successful', 'You can now log in.');
         navigation.replace('AccountSetup'); 
 
       } else {
         
-        await auth().signInWithEmailAndPassword(email, password);
+        await signInWithEmailAndPassword(auth,email, password);
         Alert.alert('Login Successful');
         navigation.replace('Tabs'); 
       }

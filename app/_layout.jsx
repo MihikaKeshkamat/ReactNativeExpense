@@ -13,11 +13,11 @@ import {ExpenseProvider} from '../components/ExpenseData';
 import Tabs from '../components/Tabs';
 // import Analysis from '@/components/Analysis';
 import AccountSetBottom from '../components/AccountSetBottom';
-import auth from '@react-native-firebase/auth'; // Adjust the path if necessary
-import firestore from '@react-native-firebase/firestore';
-
-
+import auth from 'firebase/auth'; // Adjust the path if necessary
+import firestore from 'firebase/firestore';
+import {app} from '../firebaseConfig'
 import { View, ActivityIndicator } from 'react-native';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 const Stack = createStackNavigator();
 const Layout = () => {
   const [initializing, setInitializing] = useState(true);
@@ -25,7 +25,8 @@ const Layout = () => {
   const [isAccountSetup, setIsAccountSetup] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged(async (currentUser) => {
+    const auth = getAuth();
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
         

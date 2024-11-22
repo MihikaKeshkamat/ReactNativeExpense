@@ -5,8 +5,14 @@ import {Ionicons } from '@expo/vector-icons';
 import {useExpenses} from '../components/ExpenseData';
 import { snapshot } from '@react-native-firebase/database';
 import {firebase} from '@react-native-firebase/database'
-import auth from '@react-native-firebase/auth';
+// import auth from '@react-native-firebase/auth';
+import {getAuth} from 'firebase/auth'
+import {app} from '../firebaseConfig';
+import {database} from '../firebaseConfig';
+import { ref, remove, get, child } from 'firebase/database';
+
 const Months = [
+  {label:"All Months", value: null},
   {label: "January", value: "1"},
   {label: "February", value: "2"},
   {label: "March", value: "3"},
@@ -23,38 +29,31 @@ const Months = [
 
 
 const Expenses = ({navigation, route}) => {
-  const currentUserId = auth().currentUser?.uid;
+  const auth = getAuth();
+  const currentUserId = auth.currentUser?.uid;
 
   const[isFocus,setIsFocus] = useState(false);
-  const [selected,setSelected] = useState(null);
+  const [selectedMonth,setSelectedMonth] = useState(null);
   const {expenses,  deleteExpense, setExpenses} = useExpenses();
   const [editingExpense, setEditingExpense] = useState(null);
   const [selectedCategory,setSelectedCategory] = useState(null);
   const filter = route.params?.filter || null ;
   const [filteredExpenses,setFilteredExpenses] = useState([]);
-  
-//  useEffect(() => {
-//   filterExpenses();
-//  },[expenses,filter]);
 
-//  const filterExpenses = () => {
-//   if(!filter) {
-//     setFilteredExpenses(expenses);
-//   }else {
-//     const filtered = expenses.filter(expense => expense.type === filter);
-//     setFilteredExpenses(filteredExpenses);
-//   }
-//  };
-useEffect(() => {
-  if (expenses && filter) {
-    const filteredData = expenses.filter((expense) => expense.type === filter);
-    setFilteredExpenses(filteredData);
-  } else {
-    setFilteredExpenses(expenses); 
+useEffect(()=>{
+  let filteredData = expenses;
+  if(filter){
+    filteredData = filteredData.filter((expense)=> expense.type === filter);
   }
-}, [expenses, filter]);
+  if(selectedCategory){
+    filteredData = filteredData.filter((expense)=>expense.category === selectedCategory);
+  }
+  
+  setFilteredExpenses(filteredData);
+},[expenses,filter,selectedCategory]);
 
   const  categories = [
+    {label:"All Transactions", value:null},
     {label:"Food", value:"Food"},
     {label:"Transport", value:"Transport"},
     {label:"Rent", value:"Rent"},
@@ -79,9 +78,10 @@ useEffect(() => {
   
   const handleDelete = async (expenseId) => {
     try { 
-      await firebase.app().database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-      .ref(`/${currentUserId}/expenses/${expenseId}`)
-      .remove();
+      // await firebase.initializeApp().database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+      // .ref(`/${currentUserId}/expenses/${expenseId}`)
+      await remove(ref(database, `/${currentUserId}/expenses/${expenseId}`));
+      // .remove();
       setExpenses((prevExpenses) =>
         prevExpenses.filter((expense) => expense.id !== expenseId)
       );
@@ -117,12 +117,12 @@ useEffect(() => {
           return;
         }
   
-        const snapshot = await firebase
-          .app()
-          .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
-          .ref(`/${currentUserId}/expenses`)
-          .once('value');
-  
+        // const snapshot = await firebase
+        //   .initializeApp()
+        //   .database('https://com-anonymous-expensemanager-default-rtdb.asia-southeast1.firebasedatabase.app/')
+        //   .ref(`/${currentUserId}/expenses`)
+        //   .once('value');
+        const snapshot = await get(child(ref(database), `/${currentUserId}/expenses`));
         const data = snapshot.val();
   
         if (data) {
@@ -145,6 +145,7 @@ useEffect(() => {
      
   return (
   <ScrollView>
+    <View style={{justifyContent:'center',alignItems:'center'}}>
     <View style={styles.containerDropdown}>
     <Dropdown
               style={[styles.dropdown, isFocus && {borderColor:'blue'}]}
@@ -154,16 +155,16 @@ useEffect(() => {
               iconStyle={styles.iconStyle}
               search
               data={Months}
-              maxHeight={200}
+              maxHeight={400}
               labelField="label"
               valueField="value"
               placeholder={!isFocus? 'Month' : '...'}
               searchPlaceholder="Search..."
-              value={selected}
+              value={selectedMonth}
               onFocus={() => setIsFocus(true)}
               onBlur={()=> setIsFocus(false)}
               onChange={item => {
-                setSelected(item);
+                setSelectedMonth(item);
                 setIsFocus(false);
               }}
               renderRightIcon={()=>(
@@ -178,12 +179,12 @@ useEffect(() => {
               >
               </Dropdown>
     </View>
-    
+    </View>
+    <View style={{justifyContent:'center',alignItems:'center'}}> 
       <View style={styles.showExpenses}>
         <View style={styles.expenseHeader}>
-           <Text style={{fontSize:25, fontWeight:'800', marginTop:12}}> {filter ? `${filter} Transactions` : 'All Transactions'} </Text> 
+           <Text style={{fontSize:22, fontWeight:'800', marginTop:12}}> {filter ? `${filter} Transactions` : 'All Transactions'} </Text>
      <View style={styles.filterContainerDropdown}>
-
            <Dropdown
               style={[styles.filterDropdown, isFocus && {borderColor:'blue'}]}
               placeholderStyle={styles.placeholderStyle}
@@ -192,7 +193,7 @@ useEffect(() => {
               iconStyle={styles.iconStyle}
               search
               data={categories}
-              maxHeight={200}
+              maxHeight={400}
               labelField="label"
               valueField="value"
               placeholder={!isFocus? 'Categories' : '...'}
@@ -218,6 +219,9 @@ useEffect(() => {
               </View>
         </View>
       </View> 
+      </View>
+    <View style={{justifyContent:'center',alignItems:'center'}}> 
+
       <View style={styles.expenseDataContainer}>
       <FlatList
         data={filteredExpenses}
@@ -260,8 +264,7 @@ useEffect(() => {
           </View>
         )} 
       ></FlatList>
-      
-
+    </View>
     </View>
 
       <View style={{height:100}}></View> 
@@ -273,13 +276,14 @@ const styles = StyleSheet.create({
   containerDropdown:{
     marginTop:0,
     padding:10,
-    width:390,
+    width:350,
+    justifyContent:'center'
   },
   filterContainerDropdown: {
     marginTop:0,
     padding:10,
     width:170,
-    marginLeft:-50,
+    marginLeft:-130,
   },
   filterDropdown:{
     height: 40,
