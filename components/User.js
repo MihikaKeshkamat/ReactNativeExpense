@@ -2,17 +2,16 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput,Alert } from 'react
 import React, {useState, useEffect} from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-const User = () => {
+
+const User = ({navigation}) => {
   const [name,setName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState('');
 
   useEffect(() => {
     const getName = async () => {
       const storedName = await AsyncStorage.getItem('name');
       if(storedName){
         setName(storedName);
-        setEditedName(storedName);
       }
     };
     getName();
@@ -20,14 +19,14 @@ const User = () => {
 
  const handleEdit = async () => {
     try{
-      if(editedName.trim() === ''){
+      if(name.trim() === ''){
         Alert.alert('Validation', 'Name cannot be empty');
         return;
       }
-      await AsyncStorage.setItem('name', editedName);
-      setName(editedName);
-      setIsEditing(false);
+      await AsyncStorage.setItem('name', name);
       Alert.alert('Success','Name updated succesffuly');
+      setIsEditing(false);
+      navigation.navigate('Home',{updatedName: name});
     }catch(error){
       console.error('Error updating Name',error);
       Alert.alert('Error', 'Failed to Update Name');
@@ -49,8 +48,9 @@ const User = () => {
     {isEditing ? (
       <TextInput
       style={styles.nameInput}
-      value={editedName}
-      onChangeText={setEditedName}/>
+      value={name}
+      onChangeText={setName}
+      editable={isEditing}/>
     ):(
       <Text style={styles.name}>{name}</Text>
     )}
@@ -69,6 +69,12 @@ const User = () => {
         <Text style={styles.saveButtonText}>Save</Text>
       </TouchableOpacity>
     )}
+  </View>
+  <View style={styles.logoutContainer}>
+    <Ionicons 
+    />
+    <Text>Logout</Text>
+
   </View>
     </>
   )

@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useExpenses} from './ExpenseData'
 import { useNavigation } from '@react-navigation/native'
-const HomeScreen = () => {
 
+const HomeScreen = ({route}) => {
   const [name,setName] = useState('');
   const [balance,setBalance] = useState('');
   const [totalExpenses, setTotalExpenses] = useState('0');
@@ -41,12 +41,10 @@ const HomeScreen = () => {
   // },[]);
 
   useEffect(() => {
-    // Check AsyncStorage for account data on component mount
     const getAccountInfo = async () => {
       try {
         const isAccountSetup = await AsyncStorage.getItem('isAccountSetup');
         if (isAccountSetup === 'true') {
-          // Account setup is complete, fetch name and balance
           const storedName = await AsyncStorage.getItem('name');
           const storedBalance = await AsyncStorage.getItem('balance');
 
@@ -68,6 +66,11 @@ const HomeScreen = () => {
 
     getAccountInfo();
   }, []);
+  useEffect(() => {
+    if(route.params?.updatedName){
+      setName(route.params.updatedName);
+    }
+  },[route.params?.updatedName]);
   // useEffect(() => {
   //   if (route.params?.name && route.params?.balance) {
   //     setName(route.params.name);
