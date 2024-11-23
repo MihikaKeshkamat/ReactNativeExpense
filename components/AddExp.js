@@ -1,20 +1,13 @@
-import { View, Text, StyleSheet,TextInput,Image,useWindowDimensions,TouchableOpacity,ScrollView,FlatList, Alert} from 'react-native'
+import { View, Text, StyleSheet,TextInput,useWindowDimensions,TouchableOpacity,ScrollView,Dimensions,Platform, Alert} from 'react-native'
 import React,{useState, useEffect} from 'react'
-import {useNavigation} from '@react-navigation/native';
-import {useExpenses} from '../components/ExpenseData';
 import {Ionicons} from '@expo/vector-icons';
 import {Dropdown } from 'react-native-element-dropdown';
 import { AntDesign } from '@expo/vector-icons';
-import {serverTimestamp} from '@react-native-firebase/database';
-import auth from '@react-native-firebase/auth';
-import { firebase } from '@react-native-firebase/database';
 import {RadioButton} from 'react-native-paper';
 import { getAuth} from "firebase/auth";
+import { ref, update, push, getDatabase } from 'firebase/database';
 
-import {app} from '../firebaseConfig';
-// import {auth} from '../firebaseConfig';
-import { database } from '../firebaseConfig';
-import { ref, set, update, push, getDatabase } from 'firebase/database';
+
 const AddExp = ({route, navigation}) => {
   const auth = getAuth();
   const currentUserId = auth.currentUser?.uid;
@@ -146,39 +139,55 @@ const AddExp = ({route, navigation}) => {
     const date = `${day}-${month}-${year}`;
     const time = `${hours}:${minutes}`;
     const dateTime = `${date} ${time}`;
+    // return Date.now();
     return dateTime;
   };
-  const dimensions = useWindowDimensions().width;
+
+  // const windowWidth = useWindowDimensions().width;
+  // const windowHeight = useWindowDimensions().height;
+
+  const {height, width} = useWindowDimensions();
+
+
+  // const {height } = Dimensions.get('window');
+  // const windowWidth = Dimensions.get('window').width || 400;
 
   return (
     <> 
     
-    <ScrollView>
+    <ScrollView contentContainerStyle={{flexGrow:1}}>
 
-    <View style={{flex:1,height:100}}></View>
-    <View style={{height:200,width:'auto'}}>
+    <View style={{height : {height} * 0.1}}></View>
+    
+    <View style={{width: {width}*0.8, flex:1,padding:16,alignSelf:'center'}}>
+    {/* <View style={styles.formCard}> */}
     <View style={styles.amount}>
-       <Text style={{fontSize:20, fontWeight:'400'}} >Record Transaction</Text>
-       <TextInput  placeholder='$               ' value={amount}   onChangeText={(numeric)=> setAmount(numeric)} style={styles.amountPlaceholder}/>
+       <Text style={styles.title} >Record Transaction</Text>
+       {/* <View style={styles.amountContainer}> */}
+       <TextInput  placeholder='$                              ' value={amount}   onChangeText={(numeric)=> setAmount(numeric)} style={styles.amountPlaceholder}
+        />
         {amountError ? <Text style={{color:'red'}}>{amountError}</Text>: null}
         {zeroError ? <Text style={{color:'red'}}>{zeroError}</Text>: null}
-
+        {/* </View> */}
         
         <View style={styles.amountBottom}>
-            <Text style={{fontSize:18}}>Date and Time</Text>
-            <Text style={{fontSize:18}}>{getCurrentDateTime()}</Text>
+            <Text style={styles.labelText}>Date and Time</Text>
+            <Text style={styles.valueText}>{getCurrentDateTime()}</Text>
         </View>
         <View style={styles.amountPaidTo}>
-            <Text style={{fontSize:18}}>Paid To</Text>
-            <TextInput style={{fontSize:18, color:'#DAE7DC'}} placeholder='Enter the name or place' value={itemName} onChangeText={(text)=> setItemName(text)}/>
+            <Text style={styles.labelText}>Paid To</Text>
+            <TextInput style={styles.paidToInput} placeholder='Enter the name or place' value={itemName} onChangeText={(text)=> setItemName(text)}/>
         </View>
     </View> 
         {itemError ? <Text style={{color:'red', textAlign:'center'}}>{itemError}</Text>: null}
 
         </View>
-
-      <View style={styles.category}>
-         
+        {/* </View> */}
+     
+      <View style={{justifyContent:'center' }}>
+      <View style={{marginVertical: -10, flex:1,
+             width: 350,
+            alignSelf: 'center'}}> 
         <Dropdown
               style={[styles.dropdown, isFocus && {borderColor:'blue'}]}
               placeholderStyle={styles.placeholderStyle}
@@ -220,8 +229,20 @@ const AddExp = ({route, navigation}) => {
               >
               </Dropdown>
         {categoryError ? <Text style={{color:'red', textAlign:'center'}}>{categoryError}</Text>: null}
-
-              <View style={styles.RadioButton}>  
+        </View> 
+        </View>
+        <View style={{justifyContent:'center'}}>
+        <View style={{alignItems:'center'}}>
+              <View style={{ flexDirection: 'row',
+                justifyContent: 'space-between',
+              width: 350,
+              marginHorizontal:30,
+              paddingVertical:20,
+              paddingHorizontal:20,
+              // flex:1,
+              marginVertical: 50,
+              borderWidth: 1,
+               borderRadius:20,}}>  
                 <View style={styles.radioButton}>
               <RadioButton value="Debit" 
               status={checked === "Debit" ? 'checked' : 'unchecked'}
@@ -235,15 +256,16 @@ const AddExp = ({route, navigation}) => {
               <Text style={styles.radioButtonLabel}>Credit</Text>
         {optionsError ? <Text style={{color:'red', textAlign:'center'}}>{optionsError}</Text>: null}
         </View>
-              </View>              
-             </View>
-
-
+        </View>
+        </View> 
+        </View>
              <View style={styles.buttons}>
 
 <TouchableOpacity onPress={handleSaveExpense} >
 <View style={styles.largeButton}>
-<Text style={styles.buttonText}>{editingExpense ? 'Update' : 'Save'}</Text>
+<Text style={{color: '#fff', paddingHorizontal:10,
+    fontSize: 22,
+    textAlign: 'center',}}>{editingExpense ? 'Update' : 'Save'}</Text>
 </View>
 </TouchableOpacity>
 
@@ -252,8 +274,12 @@ const AddExp = ({route, navigation}) => {
 <Text style={styles.buttonText}>Cancel</Text>
 </View>
 </TouchableOpacity>
-</View>          
-             <View style={styles.expenseDataContainer}>
+</View>      
+<View style={{justifyContent:'center',alignItems:'center'}}> 
+             <View style={{flex:1,
+    marginTop:30,
+    width:300,
+    marginHorizontal:10,}}>
               <View style={styles.expenseItem}>
             <View style={styles.expenseDetails}>
               <Text style={styles.categoryText}>{selectedCategory}</Text>
@@ -272,13 +298,8 @@ const AddExp = ({route, navigation}) => {
               </Text>
               </View>
             </View>
-          
-          
-      
-        
-    
       </View> 
-      
+      </View>   
       <View style={{height:100}}></View> 
     </ScrollView>
     
@@ -288,45 +309,86 @@ const AddExp = ({route, navigation}) => {
 }
 
 const styles = StyleSheet.create({
+  // mainContent:{
+  //   flex:1,
+  //   padding:16,
+  //   // width:'90%',
+  //   alignSelf:'center',
+  // },
   amount: {
-      width:'auto',
-      height:'90',
+      width:'20',
+      height:200,
       borderRadius:40,
       backgroundColor: '#B2C9AB',
       flexDirection: 'column',
       justifyContent:'center',
       alignItems:'center',
-      flex:1,
-      marginLeft:20,
-      marginRight:20,
-      paddingVertical:10,
-      marginTop:10,
+      flex:0.8,
+      // marginLeft:20,
+      // marginRight:20,
+      // paddingVertical:10,
+      // paddingHorizontal:100,
+      // marginTop:50,
+      // marginBottom:50,
+      padding:20,
+      marginVertical:16,
   },
+  title: {
+    fontSize: Platform.OS === 'web' ? 28 : 22,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+
   amountPlaceholder:{
     marginTop:10,
-    fontSize:20,
+    fontSize:24,
     textDecorationLine: 'underline',
     marginBottom:10,
-    paddingHorizontal:10,
-    // marginLeft:10,
+    paddingHorizontal:20,
+    paddingVertical:8,
+    // marginLeft:46,
+    // minWidth: dimension*0.6,
     textDecorationLine:'underline',
-    color:'#DAE7DC',
+    color:'gray',
     justifyContent:'center',
-    alignItems:'center'
+    alignItems:'center',
+    textAlign:'center'
   },
   amountBottom: {
     flexDirection: 'row',
     justifyContent:'space-between',
-    gap: 50,
+    // gap: 50,
+    marginBottom:16,
     
+  },
+  amountContainer:{
+    alignItems:'center',
+    // marginBottom:16
   },
   amountPaidTo:{
     flexDirection: 'row',
     justifyContent:'space-between',
-    gap: 55,
-    marginLeft:10,
-    marginTop:20,
-    fontSize:'18',
+    alignItems:'center',
+    gap: 30,
+    // marginLeft:10,
+    // marginTop:20,
+    // fontSize:18,
+  },
+  labelText:{
+    fontSize:16,
+    fontWeight:'500'
+  },
+  valueText: {
+    fontSize:16,
+    flex:1,
+    marginLeft:16,
+    padding:4
+  },
+  paidToInput:{
+    fontSize:16,
+    flex:1,
+    marginLeft:16,
+    padding:4
   },
   addExpImage: {
     // flex:1,
@@ -342,45 +404,55 @@ const styles = StyleSheet.create({
     borderRadius:20,
   },
   buttons:{
-    flexDirection:'row',
+    // flexDirection:'row',
     justifyContent:'center',
-    alignItems:'center',
-    gap:60,
-    marginTop:20,
-    // position:'relative',
-    paddingVertical:10,
-    paddingHorizontal:80,
+    // alignItems:'center',
+    gap:70,
+    // marginTop:20,
+    // // position:'relative',
+    // paddingVertical:30,
+    // paddingHorizontal:80,
+    flexDirection: 'row',
+    // justifyContent: 'space-evenly',
+    marginVertical: 20,
+
   },
   largeButton: {
     // alignSelf: 'stretch',
-    borderRadius: 16,
+    // borderRadius: 16,
+    // backgroundColor: '#92B6B1',
+    // paddingHorizontal: 40,
+    // paddingVertical: 20,
+    // marginBottom:0,
     backgroundColor: '#92B6B1',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    marginBottom:0,
-    
+    padding: 20,
+    borderRadius: 10,
   },
   buttonText: {
-    fontSize: 25,
-    color: 'white',
-    fontWeight: '600',
+    // fontSize: 30,
+    // color: 'white',
+    // fontWeight: '600',
+    // textAlign: 'center',
+    color: '#fff',
+    fontSize: 22,
     textAlign: 'center',
+
   },
   scrollContent: {
     paddingBottom : 100,
   },
   expenseDataContainer:{
-    flex:1,
-    marginTop:20,
+    
+
   },
   expenseItem:{
-    width:'90%',
+    width:'100%',
     height:80,
     display:'flex',
     flexDirection: 'row',
     borderWidth:1,
     borderRadius:20,
-    marginHorizontal:20,
+    // marginHorizontal:20,
     justifyContent:'space-between',
     marginVertical:10,
   },
@@ -408,10 +480,12 @@ const styles = StyleSheet.create({
     fontSize:24,
     fontWeight:'500',
     color:'red',
+    
   },
   dateText:{
     marginTop:10,
-    marginRight:20,
+    marginRight:15,
+    
   },
   debit:{
     textAlign:'center',
@@ -419,20 +493,30 @@ const styles = StyleSheet.create({
     marginTop:20,
   },
   category: {
-      marginHorizontal:30,
-      marginTop:20,
+      marginHorizontal:20,
+      marginTop:-40,
       flexDirection:'column',
-      
+      justifyContent:'center',
+      // width:'90%',
+      paddingHorizontal:-40,
+      height:100,
+      paddingVertical:50
+      // width: {width} * 0.8,
+
   },
   dropdown: {
-    height: 50,
+    // height: 50,
     backgroundColor:'#B2C9AB',
-    borderBottomColor: 'gray',
-    borderBottomWidth: 1,
-    borderRadius:10,
-    paddingHorizontal:10,
-    marginTop:10,
-    
+    // borderBottomColor: 'gray',
+    // borderBottomWidth: 1,
+    // borderRadius:10,
+    // paddingHorizontal:10,
+    // marginTop:10,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    // backgroundColor: '#fff',
   },
   placeholderStyle: {
     fontSize: 18,
@@ -463,20 +547,38 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontWeight:'500',
   },
-  RadioButton:{
-    flexDirection:'column',
-    borderWidth: 1,
-    borderRadius:20,
-    marginTop:10,
+  // RadioButton:{
+  //   flexDirection:'column',
+  //   borderWidth: 1,
+  //   borderRadius:20,
+  //   marginTop:40,
+  //   width:550,
+  //   marginHorizontal:30
+  // },
+  // radioButton:{
+  //    flexDirection: 'row',
+  //    gap:10,
+  // },
+  // radioButtonLabel:{
+  //   fontSize:20,
+  //   marginTop:5
+  // }
+  // RadioButton: {
+  //   flexDirection: 'column',
+  //   justifyContent: 'space-around',
+  //   marginVertical: 20,
+  //   borderWidth: 1,
+  //   borderRadius:20,
+  // },
+  radioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  radioButton:{
-     flexDirection: 'row',
-     gap:10,
+  radioButtonLabel: {
+    fontSize: 18,
+    fontWeight:'500'
   },
-  radioButtonLabel:{
-    fontSize:16,
-    marginTop:5
-  }
+
 })
 
 export default AddExp

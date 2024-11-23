@@ -57,12 +57,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 0,
+    marginTop: -20,
+    marginBottom:-20,
     
-    // height:10,s
+    
 },
     dot: { 
-      marginTop: 0,
+      marginTop: -10,
+      marginBottom:-10,
       height:10,
       borderRadius: 5,
       backgroundColor: "#493d8a",

@@ -9,7 +9,7 @@ import {app, auth, database} from '../firebaseConfig';
 const HomeScreen = ({route}) => {
   const [name,setName] = useState('');
   const [balance,setBalance] = useState('');
-  const [totalExpenses, setTotalExpenses] = useState('0');
+  const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalIncome,setTotalIncome] = useState(0);
   const {expenses} = useExpenses();
   const navigation = useNavigation();
@@ -54,6 +54,12 @@ const HomeScreen = ({route}) => {
       setName(route.params.updatedName);
     }
   },[route.params?.updatedName]);
+
+  useEffect(() => {
+    if(route.params?.updatedBalance){
+      setBalance(route.params.updatedBalance);
+    }
+  },[route.params?.updatedBalance]);
   
   useEffect(()=>{
     console.log('Current Expenses', expenses);
@@ -154,7 +160,7 @@ const HomeScreen = ({route}) => {
              <Text style={styles.incomeLabel}>Expense </Text>
           </View>
           <View>
-            <Text style={styles.incomeAmount}>${totalExpenses}</Text>
+            <Text style={styles.incomeAmount}>${totalExpenses.toFixed(2)}</Text>
           </View>
         </TouchableOpacity>
 
@@ -175,7 +181,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     marginBottom: 0,
-    // justifyContent:'center'
   },
   leftContainer: {
     flexDirection: 'row', 

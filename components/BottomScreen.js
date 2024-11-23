@@ -4,9 +4,6 @@ import {BottomSheetModalProvider,BottomSheetView,BottomSheetModal, BottomSheetBa
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
-import auth from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {app} from '../firebaseConfig';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
 const BottomScreen = () => {
@@ -42,6 +39,7 @@ const BottomScreen = () => {
     const auth = getAuth();
     try {
       if (isSignUp) {
+        isValidEmail();
         await createUserWithEmailAndPassword(auth,email, password);
         // await AsyncStorage.setItem('isFirstLogin', 'false');
         Alert.alert('Sign-Up Successful', 'You can now log in.');
@@ -64,7 +62,7 @@ const BottomScreen = () => {
             onPress={handlePresentModalPress}
             title="Login"
             color="black"
-            style={{width:400, borderRadius:'5',fontSize:28,paddingVertical:10}}
+            style={{width:200, borderRadius:'5',fontSize:28,paddingVertical:10, paddingHorizontal: 60}}
             index={-1}
           />
           <BottomSheetModal
@@ -110,7 +108,7 @@ const BottomScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
+    flex: 0.5,
     padding: 24,
     justifyContent: 'center',
     alignItems: 'center',

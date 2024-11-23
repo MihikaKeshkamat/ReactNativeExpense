@@ -7,6 +7,8 @@ import {getAuth, signOut} from 'firebase/auth'
 const User = ({navigation}) => {
   const [name,setName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [balance, setBalance] = useState('');
+  const [isBalanceEditing, setIsBalanceEditing] = useState(false);
 
   useEffect(() => {
     const getName = async () => {
@@ -17,6 +19,18 @@ const User = ({navigation}) => {
     };
     getName();
   }, []);
+  
+  useEffect(() => {
+    const getBalance = async () => {
+      const storedBalance = await AsyncStorage.getItem('balance');
+      if(storedBalance){
+        setBalance(storedBalance);
+      }
+    };
+    getBalance();
+  }, []);
+
+
 
  const handleEdit = async () => {
     try{
@@ -33,6 +47,21 @@ const User = ({navigation}) => {
       Alert.alert('Error', 'Failed to Update Name');
     }
  }
+ const handleBalanceEdit = async () => {
+  try{
+    if(balance.trim() === 0){
+      Alert.alert('Validation', 'Balance cannot be empty');
+      return;
+    }
+    await AsyncStorage.setItem('balance', balance);
+    Alert.alert('Success','Balance updated succesffuly');
+    setIsBalanceEditing(false);
+    navigation.navigate('Home',{updatedBalance: balance});
+  }catch(error){
+    console.error('Error updating Name',error);
+    Alert.alert('Error', 'Failed to Update Balance');
+  }
+}
 
  const handleLogout = () => {
   const auth = getAuth();
@@ -63,6 +92,7 @@ const User = ({navigation}) => {
  
   return (
     <>
+    <View style={{justifyContent:'center',alignItems:'center'}}>
     <View style={styles.header}>
   <View style={styles.leftContainer}>
     <Ionicons 
@@ -99,6 +129,44 @@ const User = ({navigation}) => {
       </TouchableOpacity>
     )}
   </View>
+
+  <View style={styles.header}>
+  <View style={styles.leftContainer}>
+    <Ionicons 
+      style={styles.profile} 
+      name="wallet-outline" 
+      size={50} 
+      color="#793FCA" 
+    />
+    </View>
+    <View style={styles.nameContainer}>
+    <Text style={styles.username}> Balance </Text>
+    {isBalanceEditing ? (
+      <TextInput
+      style={styles.nameInput}
+      value={balance}
+      onChangeText={setBalance}
+      editable={isBalanceEditing}/>
+    ):(
+      <Text style={styles.name}>{balance}</Text>
+    )}
+    </View>
+    <View style={styles.editBalanceButton}>
+    <TouchableOpacity onPress={()=>setIsBalanceEditing(!isBalanceEditing)} >
+                <Ionicons
+                  name="pencil"
+                  color="black"
+                  size={20}
+                />
+              </TouchableOpacity>
+    </View>
+    {isBalanceEditing && (
+      <TouchableOpacity style={styles.saveButton} onPress={handleBalanceEdit}>
+        <Text style={styles.saveButtonText}>Save</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+  <View style={{justifyContent:'center',alignItems:'center'}}>
   <View style={styles.logoutContainer}>
     <Ionicons 
     name="log-out-outline"
@@ -106,11 +174,16 @@ const User = ({navigation}) => {
     size={30}
     style={styles.logoutIcon}
     />
-    <Text style={{fontSize:22,fontWeight:'500',marginTop:8,marginLeft:-120}}>Logout</Text>
+    <View style={styles.nameContainer}>
+    <Text style={{fontSize:22,fontWeight:'500',marginTop:8}}>Logout</Text>
+    </View>
+    <View style={styles.editBalanceButton}>
     <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
       <Text style={styles.logoutButtonText}>Click Me</Text>
     </TouchableOpacity>
-
+    </View>
+  </View>
+  </View>
   </View>
     </>
   )
@@ -145,14 +218,17 @@ const styles=StyleSheet.create({
     fontWeight: 'bold',
   },
   editButton: {
-    marginLeft:100
+    marginLeft:105
+  },
+  editBalanceButton: {
+    marginLeft:120
   },
   logoutContainer:{
     borderWidth:1,
-    borderRadius:20,
+    borderRadius:10,
     marginHorizontal:20,
-    marginVertical:10,
-    width:'90%',
+    marginVertical:20,
+    width:'86%',
     flexDirection:'row',
     height:50,
     justifyContent:'space-between',
